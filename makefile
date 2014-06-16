@@ -25,7 +25,7 @@ CFLAGS = -g -Wall
 SRCS = src/main.cpp
 PROG = HelloWorld.exe
  
-OPENCV = -I"..\opencv\mybuild\install\include" -L"..\opencv\mybuild\install\x86\mingw\lib" -lstdc++ -lopencv_core249 -lopencv_video249 -lopencv_imgproc249 -lopencv_highgui249
+OPENCV = -I"..\opencv\mybuild\install\include" -L"..\opencv\mybuild\install\x86\mingw\lib" -lstdc++ -lopencv_core249 -lopencv_video249 -lopencv_imgproc249 -lopencv_highgui249 -lopencv_objdetect249
 
  
 $(PROG) : $(SRCS)
