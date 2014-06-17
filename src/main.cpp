@@ -6,14 +6,9 @@
  */
 
 #include <opencv2/opencv.hpp>
-
-//#define DEMO_VARIANT_EDGE_DETECTION
-#define DEMO_VARIANT_FACE_DETECTION
-
-#ifdef DEMO_VARIANT_FACE_DETECTION
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
+#include <opencv2/objdetect/objdetect.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include <iostream>
 #include <stdio.h>
@@ -31,31 +26,16 @@ CascadeClassifier face_cascade;
 CascadeClassifier eyes_cascade;
 string window_name = "Capture - Face detection";
 RNG rng(12345);
-#endif  // DEMO_VARIANT_FACE_DETECTION
 
+
+//
+//  main()
+//
 int main(int argc, char *argv[]){
     cv::VideoCapture cap(0); // open the default camera
     if(!cap.isOpened())      // check if we succeeded
         return -1;
 
-#ifdef DEMO_VARIANT_EDGE_DETECTION
-    cv::Mat edges;
-    cv::namedWindow("edges",1);
-    for(;;)
-    {
-    	cv::Mat frame;
-        cap >> frame; // get a new frame from camera
-//        cv::imshow("edges", frame);
-
-        cv::cvtColor(frame, edges, CV_BGR2GRAY);
-        cv::GaussianBlur(edges, edges, cv::Size(7,7), 1.5, 1.5);
-        cv::Canny(edges, edges, 0, 30, 3);
-        cv::imshow("edges", edges);
-        if(cv::waitKey(30) >= 0) break;
-    }
-#endif  // DEMO_VARIANT_EDGE_DETECTION
-
-#ifdef DEMO_VARIANT_FACE_DETECTION
    Mat frame;
 
    //-- 1. Load the cascades
@@ -65,9 +45,9 @@ int main(int argc, char *argv[]){
    //-- 2. Read the video stream
     while( true )
     {
-		cap >> frame;
+	cap >> frame;
 
-		//-- 3. Apply the classifier to the frame
+	//-- 3. Apply the algorithm to the frame
        if( !frame.empty() )
        { detectAndDisplay( frame ); }
        else
@@ -76,13 +56,26 @@ int main(int argc, char *argv[]){
        int c = waitKey(10);
        if( (char)c == 'c' ) { break; }
     }
-#endif  // DEMO_VARIANT_FACE_DETECTION
+
     // the camera will be deinitialized automatically in VideoCapture destructor
     return 0;
 }
 
+// detect_edges()
+#if 1
+void detectAndDisplay( Mat frame )
+{
+    cv::Mat edges;
+//  cv::imshow(window_name, frame);
 
-#ifdef DEMO_VARIANT_FACE_DETECTION
+    cv::cvtColor(frame, edges, CV_BGR2GRAY);
+    cv::GaussianBlur(edges, edges, cv::Size(7,7), 1.5, 1.5);
+    cv::Canny(edges, edges, 0, 30, 3);
+    cv::imshow(window_name, edges);
+}
+#endif
+
+#if 0
 /** @function detectAndDisplay */
 void detectAndDisplay( Mat frame )
 {
@@ -116,4 +109,4 @@ void detectAndDisplay( Mat frame )
   //-- Show what you got
   imshow( window_name, frame );
 }
- #endif  // DEMO_VARIANT_FACE_DETECTION
+#endif
