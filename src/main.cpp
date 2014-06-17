@@ -132,7 +132,7 @@ void detectAndDisplay( Mat frame )
      }
   }
 #endif
-  //-- Show what you got
-  imshow( window_name, frame );
+//  //-- Show what you got
+//  imshow( window_name, frame );
 }
 #endif
