@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <stdio.h>
+#include <sstream>
 
 using namespace std;
 using namespace cv;
@@ -25,6 +26,7 @@ String eyes_cascade_name = "haarcascades/haarcascade_eye_tree_eyeglasses.xml";
 CascadeClassifier face_cascade;
 CascadeClassifier eyes_cascade;
 string window_name = "Capture - Face detection";
+const string pictures_dir = "./pictures";
 RNG rng(12345);
 
 
@@ -62,7 +64,7 @@ int main(int argc, char *argv[]){
 }
 
 // detect_edges()
-#if 1
+#if 0
 void detectAndDisplay( Mat frame )
 {
     cv::Mat edges;
@@ -75,7 +77,7 @@ void detectAndDisplay( Mat frame )
 }
 #endif
 
-#if 0
+#if 1
 /** @function detectAndDisplay */
 void detectAndDisplay( Mat frame )
 {
@@ -87,6 +89,29 @@ void detectAndDisplay( Mat frame )
 
   //-- Detect faces
   face_cascade.detectMultiScale( frame_gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(30, 30) );
+
+  // If there are any faces in the picture, count to 3. If this is the third in a row,
+  // record the picture. This prevents of false positives.
+  static unsigned consecutive_frames_with_faces = 0;
+  if(faces.empty())
+  {
+    consecutive_frames_with_faces = 0;
+  } else
+  {
+    consecutive_frames_with_faces++;
+    cout << faces.size() << " faces in image, image_count is " << consecutive_frames_with_faces << endl;
+
+    static unsigned picture_number = 0;
+    if(consecutive_frames_with_faces >= 3)
+    {
+      stringstream ss;
+      ss << pictures_dir << "/face_" << picture_number++ << ".jpg";
+      cout << "Writing picture " << ss.str() << endl;
+      imwrite(ss.str(), frame);
+    }
+  }
+
+#if 0
 
   for( size_t i = 0; i < faces.size(); i++ )
   {
@@ -106,6 +131,7 @@ void detectAndDisplay( Mat frame )
        circle( frame, center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
      }
   }
+#endif
   //-- Show what you got
   imshow( window_name, frame );
 }
