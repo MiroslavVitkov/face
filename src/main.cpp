@@ -63,21 +63,6 @@ int main(int argc, char *argv[]){
     return 0;
 }
 
-// detect_edges()
-#if 0
-void detectAndDisplay( Mat frame )
-{
-    cv::Mat edges;
-//  cv::imshow(window_name, frame);
-
-    cv::cvtColor(frame, edges, CV_BGR2GRAY);
-    cv::GaussianBlur(edges, edges, cv::Size(7,7), 1.5, 1.5);
-    cv::Canny(edges, edges, 0, 30, 3);
-    cv::imshow(window_name, edges);
-}
-#endif
-
-#if 1
 /** @function detectAndDisplay */
 void detectAndDisplay( Mat frame )
 {
@@ -91,7 +76,7 @@ void detectAndDisplay( Mat frame )
   face_cascade.detectMultiScale( frame_gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(30, 30) );
 
   // If there are any faces in the picture, count to 3. If this is the third in a row,
-  // record the picture. This prevents of false positives.
+  // record the picture. This protects from false positives.
   static unsigned consecutive_frames_with_faces = 0;
   if(faces.empty())
   {
@@ -104,35 +89,18 @@ void detectAndDisplay( Mat frame )
     static unsigned picture_number = 0;
     if(consecutive_frames_with_faces >= 3)
     {
+      // Form file name.
       stringstream ss;
       ss << pictures_dir << "/face_" << picture_number++ << ".jpg";
       cout << "Writing picture " << ss.str() << endl;
-      imwrite(ss.str(), frame);
-    }
-  }
 
-#if 0
-
-  for( size_t i = 0; i < faces.size(); i++ )
-  {
-    Point center( faces[i].x + faces[i].width*0.5, faces[i].y + faces[i].height*0.5 );
-    ellipse( frame, center, Size( faces[i].width*0.5, faces[i].height*0.5), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
-
-    Mat faceROI = frame_gray( faces[i] );
-    std::vector<Rect> eyes;
-
-    //-- In each face, detect eyes
-    eyes_cascade.detectMultiScale( faceROI, eyes, 1.1, 2, 0 |CV_HAAR_SCALE_IMAGE, Size(30, 30) );
-
-    for( size_t j = 0; j < eyes.size(); j++ )
-     {
-       Point center( faces[i].x + eyes[j].x + eyes[j].width*0.5, faces[i].y + eyes[j].y + eyes[j].height*0.5 );
-       int radius = cvRound( (eyes[j].width + eyes[j].height)*0.25 );
-       circle( frame, center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
-     }
-  }
-#endif
-//  //-- Show what you got
-//  imshow( window_name, frame );
-}
-#endif
+      // Crop the faces from the picture and write them to a file.
+      for(size_t i = 0; i < faces.size(); ++i)
+      {
+        Rect myROI(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
+        Mat cropped = frame(myROI);
+        imwrite(ss.str(), cropped);
+      }  // for each face in image
+    }  // if lpf
+  }  // if any faces in image
+}  // foo()
