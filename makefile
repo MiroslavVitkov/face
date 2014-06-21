@@ -20,7 +20,7 @@ $(PROG) : $(SRCS)
 	$(CC) $(CFLAGS) $(SRCS) $(OPENCV) -o $(PROG)
 	
 #/build/exe: src/main.cpp
-#	gcc   $(LIBPATHS) $(LIBS) $(INCLUDEPATHS) src/main.cpp -o build/exe
+#	gcc   $(LIBPATHS) $(LIBS) $(INCLUDEPATHS) src/main.cpp -o build/lapcam
 
 .PHONY : clean
 clean:
