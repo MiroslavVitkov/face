@@ -7,3 +7,6 @@ target_link_libraries( face_detect_and_save ${OpenCV_LIBS} )
 
 add_executable( face_rec_train src/face_rec_train.cpp )
 target_link_libraries( face_rec_train ${OpenCV_LIBS} )
+
+add_executable( face_rec_detect src/face_rec_detect.cpp )
+target_link_libraries( face_rec_detect ${OpenCV_LIBS} )
