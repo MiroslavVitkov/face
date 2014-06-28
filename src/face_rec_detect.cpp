@@ -27,6 +27,8 @@
 using namespace cv;
 using namespace std;
 
+#define Log (cout << endl )
+
  /** Global variables */
 String face_cascade_name = "haarcascades/haarcascade_frontalface_alt.xml";
 String eyes_cascade_name = "haarcascades/haarcascade_eye_tree_eyeglasses.xml";
@@ -46,6 +48,8 @@ int main(int argc, const char *argv[]) {
         cout << "usage: " << argv[0] << " <trained_model>" << endl;
         exit(1);
     }
+
+    Log << "Program started.";
     // The following lines create an LBPH model for
     // face recognition and train it with the images and
     // labels read from the given CSV file.
@@ -70,11 +74,13 @@ int main(int argc, const char *argv[]) {
     //
     Ptr<FaceRecognizer> model = createLBPHFaceRecognizer();
     model->load(argv[1]);
+    Log << "Model trained.";
 
     // Open the default camera.
     cv::VideoCapture cap(0); // open the default camera
     if(!cap.isOpened())      // check if we succeeded
         return -1;
+    Log << "Camera initialized.";
 
     Mat frame;
 
@@ -82,6 +88,7 @@ int main(int argc, const char *argv[]) {
     {
         cap >> frame;
         std::vector<Mat> detected_faces =  detect_faces( frame );
+        Log << "Number of detected faces: " << detected_faces.size();
         if( low_pass_filter(detected_faces) )
         {
             int predictedLabel = model->predict(detected_faces[0]);  // TODO: just a mock, fix for n targets.
@@ -111,6 +118,8 @@ bool low_pass_filter(std::vector<Mat> &detected_faces)
         consecutive_positives = 0;
     }
 
+    Log << "Consecutive frames with images: " << current_faces;
+
     if( current_faces >= 3 )
     {
         return true;
@@ -127,9 +136,11 @@ std::vector<cv::Mat> detect_faces( Mat frame )
 
     cvtColor( frame, frame_gray, CV_BGR2GRAY );
     equalizeHist( frame_gray, frame_gray );
+    Log <<"Graiscale image obtained."; 
 
     //-- Detect faces
     face_cascade.detectMultiScale( frame_gray, faces_rects, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(30, 30) );
+    Log << "Detected " << faces_rects.size() << "faces in frame.";
 
     // Crop the faces from the picture and return them in a vector.
       for(size_t i = 0; i < faces_rects.size(); ++i)
