@@ -125,9 +125,9 @@ bool low_pass_filter(std::vector<Mat> &detected_faces)
         consecutive_positives = 0;
     }
 
-    Log << "Consecutive frames with images: " << current_faces;
+    Log << "Consecutive frames with images: " << consecutive_positives;
 
-    if( current_faces >= 3 )
+    if( consecutive_positives >= 3 )
     {
         return true;
     } else {
