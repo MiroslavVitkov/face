@@ -50,6 +50,13 @@ int main(int argc, const char *argv[]) {
     }
 
     Log << "Program started.";
+
+    // Load the cascades (face detectors).
+    if( !face_cascade.load( face_cascade_name ) ){ printf("--(!)Error loading_1\n"); return -1; };
+    if( !eyes_cascade.load( eyes_cascade_name ) ){ printf("--(!)Error loading_2\n"); return -1; };
+
+    // Load the face recogniser.
+
     // The following lines create an LBPH model for
     // face recognition and train it with the images and
     // labels read from the given CSV file.
@@ -136,19 +143,19 @@ std::vector<cv::Mat> detect_faces( Mat frame )
 
     cvtColor( frame, frame_gray, CV_BGR2GRAY );
     equalizeHist( frame_gray, frame_gray );
-    Log <<"Graiscale image obtained."; 
+    Log << endl << "Graiscale image obtained.";
 
     //-- Detect faces
     face_cascade.detectMultiScale( frame_gray, faces_rects, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(30, 30) );
-    Log << "Detected " << faces_rects.size() << "faces in frame.";
+    Log << "Detected " << faces_rects.size() << " faces in frame.";
 
     // Crop the faces from the picture and return them in a vector.
-      for(size_t i = 0; i < faces_rects.size(); ++i)
-      {
-          Rect myROI(faces_rects[i].x, faces_rects[i].y, faces_rects[i].width, faces_rects[i].height);
-          Mat cropped = frame(myROI);
-          faces_images.push_back( cropped );
-      }  // for each face in image
+    for(size_t i = 0; i < faces_rects.size(); ++i)
+    {
+        Rect myROI(faces_rects[i].x, faces_rects[i].y, faces_rects[i].width, faces_rects[i].height);
+        Mat cropped = frame(myROI);
+        faces_images.push_back( cropped );
+    }  // for each face in image
 
     return faces_images;
 }
