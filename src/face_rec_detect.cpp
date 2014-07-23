@@ -143,11 +143,9 @@ std::vector<cv::Mat> detect_faces( Mat frame )
 
     cvtColor( frame, frame_gray, CV_BGR2GRAY );
     equalizeHist( frame_gray, frame_gray );
-    Log << endl << "Graiscale image obtained.";
 
     //-- Detect faces
     face_cascade.detectMultiScale( frame_gray, faces_rects, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(30, 30) );
-    Log << "Detected " << faces_rects.size() << " faces in frame.";
 
     // Crop the faces from the picture and return them in a vector.
     for(size_t i = 0; i < faces_rects.size(); ++i)
