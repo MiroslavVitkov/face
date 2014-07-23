@@ -98,7 +98,9 @@ int main(int argc, const char *argv[]) {
         Log << "Number of detected faces: " << detected_faces.size();
         if( low_pass_filter(detected_faces) )
         {
-            int predictedLabel = model->predict(detected_faces[0]);  // TODO: just a mock, fix for n targets.
+            Mat face_gray;
+            cvtColor( detected_faces[0], face_gray, CV_BGR2GRAY );
+            int predictedLabel = model->predict(face_gray);  // TODO: just a mock, fix for n targets.
             //
             // To get the confidence of a prediction call the model with:
             //
@@ -106,8 +108,8 @@ int main(int argc, const char *argv[]) {
             //      double confidence = 0.0;
             //      model->predict(testSample, predictedLabel, confidence);
             //
-            string result_message = format("Predicted class = %d .", predictedLabel);
-            cout << result_message << endl;
+            string result_message = format("Predicted class = %d.", predictedLabel);
+            cout << endl << result_message << endl;
         }
 
     }
