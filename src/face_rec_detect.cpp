@@ -16,6 +16,9 @@
  *   See <http://www.opensource.org/licenses/bsd-license>
  */
 
+// TODO: move to CMake system
+//#define VERBOSE_LOGGING
+
 #include "opencv2/core/core.hpp"
 #include "opencv2/contrib/contrib.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -95,7 +98,10 @@ int main(int argc, const char *argv[]) {
     {
         cap >> frame;
         std::vector<Mat> detected_faces =  detect_faces( frame );
+
+#ifdef VERBOSE_LOGGING
         Log << "Number of detected faces: " << detected_faces.size();
+#endif
         if( low_pass_filter(detected_faces) )
         {
             Mat face_gray;
@@ -127,7 +133,9 @@ bool low_pass_filter(std::vector<Mat> &detected_faces)
         consecutive_positives = 0;
     }
 
+#ifdef VERBOSE_LOGGING
     Log << "Consecutive frames with images: " << consecutive_positives;
+#endif
 
     if( consecutive_positives >= 3 )
     {
