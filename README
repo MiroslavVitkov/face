@@ -1,10 +1,19 @@
 lapcam
 
+Purpose
 The purpose of this project is to interface laptop camera and perform a variety of image recognition and processing operations on the captured face of the user.
 
-This procject is a conjuration of tools.
-face_detect_and_save - detect faces at default camera and save at ./picutures
-# Please use 
+Preparation
+sudo apt-get install opencv-dev
+
+Build:
+cd build
+cmake ..
+make
+
+Use:
+This project is a conjuration of several tools.
+face_detect_and_save - detect faces at default camera and save them at ./picutures
 face_rec_train <csv.ext> <fname_trained_recogniser>
 face_rec_detect - use saved trained facerecogniset to produce specific actions in responce to each individual
 
