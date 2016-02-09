@@ -25,7 +25,23 @@ struct Images
 void read_images(const std::string &path, Images &out)
 {
     // Go to selected path.
+    DIR *dir;
+    struct dirent *ent;
+    dir = opendir(path.c_str());
+    if( dir == NULL)
+    {
+        std::cerr << "Could not open target location.";
+        std::cerr << "Make sure path to a directory was supplied as argv[1]." << std::endl;
+        std::exit(-1);
+    }
+
     // Iterate each subfolder.
+  /* print all the files and directories within directory */
+    while ((ent = readdir (dir)) != NULL)
+    {
+        printf ("%s\n", ent->d_name);
+    }
+    closedir (dir);
     // Record the name of the folder, map a numeric counter to it.
     // Read all images inside the folder.
 }
