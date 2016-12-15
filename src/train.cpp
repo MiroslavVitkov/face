@@ -1,6 +1,8 @@
 #include <dirent.h>
 
 #include <opencv2/core.hpp>
+#include <opencv2/face.hpp>
+#include <opencv2/highgui.hpp>
 
 #include <cassert>
 #include <iostream>
@@ -16,8 +18,6 @@ struct Images
     // Needs to be exactly in this format.
     std::vector<cv::Mat> _images;
     std::vector<Id> _labels;
-
-    // Mapping from numeric ids to string names of persons.
     std::map<Id, std::string> _id_to_name;
 };
 
@@ -46,35 +46,32 @@ Images read_images( std::string path )
     }
 
     // Iterate each subdir.
-    unsigned i = 0;
+    Images::Id i = 0;
     Images out;
-    struct dirent *ent = NULL, *ent2 = NULL;
-    while( (ent = readdir(parent_dir)) != NULL )
+    for( struct dirent *d1; d1; ++i, d1 = readdir(parent_dir) )
     {
-        if( is_auto_dir(ent) )  continue;
+        if( is_auto_dir(d1) )  continue;
 
-        DIR *dir = opendir( (path + ent->d_name).c_str() );
-        if(dir == NULL)
+        DIR *dir = opendir( (path + d1->d_name).c_str() );
+        if( dir == NULL )
         {
-            std::cerr << "Failed opening subdirectory " << ent->d_name << std::endl;
+            std::cerr << "Failed opening subdirectory " << d1->d_name << std::endl;
             continue;
         }
 
         // Read all images inside the dir.
-        while( (ent2 = readdir(dir)) != NULL )
+        for( struct dirent *d2; d2; d2 = readdir( dir ) )
         {
-            if( is_auto_dir(ent2) )  continue;
-            std::cout << path << ent->d_name << '/' << ent2->d_name  // relative path
-                      << ";"                                         // image-path;id separator
-                      << i << std::endl;
+            if( is_auto_dir(d2) )  continue;
+            std::string file = path + d1->d_name + '/' + d2->d_name;
+            out._images.emplace_back( cv::imread( file, CV_LOAD_IMAGE_GRAYSCALE ) );
+            out._labels.emplace_back( i );
         }
         closedir( dir );
 
         // Record the name of the dir, map a numeric counter to it.
-        out._labels.push_back( i );
-        out._id_to_name.emplace( i, ent->d_name );
+        out._id_to_name.emplace( i, d1->d_name );
         ++i;
-
     }
     closedir( parent_dir );
 
@@ -82,20 +79,37 @@ Images read_images( std::string path )
 }
 
 
+cv::Ptr<cv::FaceRecognizer> create_model( const Images &im )
+{
+    auto model = cv::createLBPHFaceRecognizer();
+    model.train( im._images, im._labels );
+    model.setLabelsInfo( im._id_to_name );
+};
+
+
+void serialize_to_file( cv::Ptr<cv::FaceRecognizer> model, std::string fname )
+{
+    model->save( fname );
+}
+
+
 int main( int argc, char **argv )
 {
     // Get command-line parameters.
-    if( argc != 2 )
+    if( argc != 3 )
     {
         std::cout << "Usage: " << argv[0]
                   << " path-to-dir-with-subdirs-with-images-for-each-person"
+                  << " path-for-output-file"
                   << std::endl;
         std::exit( -1 );
     }
-    const std::string path( argv[1] );
+    const std::string imm_path( argv[1] );
+    const std::string out_path( argv[2] );
 
-    // Output to stdout a .csv file, usable by  opencv's training algorithms.
-    read_images( path );
+    auto im = read_images( imm_path );
+    auto model = create_model( im );
+    serialize_to_file( model, out_path );
 
     return 0;
 }
