@@ -1,9 +1,9 @@
-/*
- * main.cpp
- *
- *  Created on: Apr 28, 2013
- *      Author: Miroslav Vitkov
- */
+// Watches through the main video camera.
+// When a human face is detected, it is croppd
+// and output on stdout.
+//
+// depends: libopencv-dev
+
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
@@ -21,8 +21,9 @@ using namespace cv;
 void detectAndDisplay( Mat frame );
 
  /** Global variables */
-String face_cascade_name = "haarcascades/haarcascade_frontalface_alt.xml";
-String eyes_cascade_name = "haarcascades/haarcascade_eye_tree_eyeglasses.xml";
+// /usr/share/opencv/haarcascades
+String face_cascade_name = "/usr/share/opencv/haarcascades/haarcascade_frontalface_alt.xml";
+String eyes_cascade_name = "/usr/share/opencv/haarcascades/haarcascade_eye_tree_eyeglasses.xml";
 CascadeClassifier face_cascade;
 CascadeClassifier eyes_cascade;
 string window_name = "Capture - Face detection";

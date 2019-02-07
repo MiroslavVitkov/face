@@ -17,3 +17,6 @@ face_detect_and_save - detect faces at default camera and save them at ./picutur
 face_rec_train <csv.ext> <fname_trained_recogniser>
 face_rec_detect - use saved trained facerecogniset to produce specific actions in responce to each individual
 
+# detect
+# train
+# recognise
