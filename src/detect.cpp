@@ -1,17 +1,94 @@
-// Watches through the main video camera.
-// When a human face is detected, it is croppd
-// and output on stdout.
+// Detect faces in a video file or a usb camera.
+// Outputs cropped faces on stdout or in an image folder.
 //
-// depends: libopencv-dev
+// build-deps: libopencv-dev
+// run-deps: haarcascade XMLs
 
 
 #include <opencv2/opencv.hpp>
 
+#include <exception>
 #include <iostream>
 #include <sstream>
 
 
-void detectAndDisplay( cv::Mat frame );
+struct Settings
+{
+    const std::string cascades_dir;
+    const std::string video_file;  // empty -> capture from camera
+    const std::string output_dir;  // empty -> stdout
+}
+
+
+Settings settings_test{ .cascades_dir{ "/usr/share/opencv/haarcascades" }
+                      , .video_file{ "kur.mp4" }
+                      , .output_dir{} }
+
+
+Settings settings_run{ .cascades_dir{ "/usr/share/opencv/haarcascades" }
+                      , .video_file{}
+                      , .output_dir{} }
+
+
+struct Exception : public std::runtime_exception
+{}
+
+
+struct Algorithm
+{
+    const Stetting & _settings;
+    cv::VideoCapture _video_stream;
+    cv::CascadeClassifier _classifier;
+
+
+    Algorithm( const Settings & s )
+    : _settings{ s }
+    , _video_stream{ create_stream( s ) }
+    , _classifier{ create_classifier( s, "haarcascade_frontalface_alt") }
+    {
+        // todo: consider turning '_classifier' into a verctor
+        // and adding at least 'haarcascade_eye_tree_eyeglasses'.
+    }
+
+
+private:
+    static cv::VideoCapture create_stream( const Setting & s )
+    {
+        auto vid = [ &s ] ()
+        {
+            const auto & v = s.video_file;
+            if( v.empty() )
+            {
+                return cv::VideoCapture( 0 );
+            }
+            else
+            {
+                return cv::VideoCapture( v );
+            }
+        } ();
+
+        if( ! vid.isOpened() )
+        {
+            Exception e{ "Failed to open input video stream: " + v };
+            throw e;
+        }
+
+        return vid;
+    }
+
+
+    static cv::CascadeClassifier create_classifier( const Settings & s
+                                                  , const std::string & name )
+    {
+        const auto xml_path = s.cascades_dir + '/' + name + ".xml";
+        cv::CascadeClassifier c( xml_path );
+        if( c.empty() )
+        {
+            Exception e{ "Failed to load cascade classifier: " + xml_path };
+        }
+
+        return c;
+    }
 
 
  /** Global variables */
@@ -25,40 +102,26 @@ const std::string pictures_dir = "./pictures";
 cv::RNG rng(12345);
 
 
-//
-//  main()
-//
 int main( int argc, char *argv[] )
 {
-    cv::VideoCapture cap( 0 );
+    cv::VideoCapture cap( "kur.mp4" );
     if( ! cap.isOpened() )
     {
-        std::cerr << "Failed to open default camera.";
+        std::cerr << "Failed to open input video stream.\n";
         return -1;
     }
 
-   cv::Mat frame;
+    if( !face_cascade.load( face_cascade_name ) ){ printf("--(!)Error loading_1\n"); return -1; };
+    if( !eyes_cascade.load( eyes_cascade_name ) ){ printf("--(!)Error loading_2\n"); return -1; };
 
-   //-- 1. Load the cascades
-   if( !face_cascade.load( face_cascade_name ) ){ printf("--(!)Error loading_1\n"); return -1; };
-   if( !eyes_cascade.load( eyes_cascade_name ) ){ printf("--(!)Error loading_2\n"); return -1; };
-
-   //-- 2. Read the video stream
     while( true )
     {
-	cap >> frame;
-
-	//-- 3. Apply the algorithm to the frame
-       if( !frame.empty() )
-       { detectAndDisplay( frame ); }
-       else
-       { printf(" --(!) No captured frame -- Break!"); break; }
-
-       int c = cv::waitKey(10);
-       if( (char)c == 'c' ) { break; }
+        cv::Mat frame;
+        cap >> frame;
+        assert( ! frame.empty() );
+        detectAndDisplay( frame );
     }
 
-    // the camera will be deinitialized automatically in VideoCapture destructor
     return 0;
 }
 
