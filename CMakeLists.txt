@@ -2,7 +2,7 @@ project( identity )
 
 # Dependencies.
 cmake_minimum_required(VERSION 3.13)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wfatal-errors -Wall -Wextra -Wpedantic")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -lstdc++ -Wfatal-errors -Wall -Wextra -Wpedantic")
 find_package( OpenCV REQUIRED )
 
 add_executable( detect src/detect.cpp )

@@ -17,46 +17,70 @@ struct Settings
     const std::string cascades_dir;
     const std::string video_file;  // empty -> capture from camera
     const std::string output_dir;  // empty -> stdout
-}
+};
 
 
 Settings settings_test{ .cascades_dir{ "/usr/share/opencv/haarcascades" }
                       , .video_file{ "kur.mp4" }
-                      , .output_dir{} }
+                      , .output_dir{} };
 
 
 Settings settings_run{ .cascades_dir{ "/usr/share/opencv/haarcascades" }
                       , .video_file{}
-                      , .output_dir{} }
+                      , .output_dir{} };
 
 
-struct Exception : public std::runtime_exception
-{}
+struct Exception : public std::runtime_error
+{
+    Exception( const std::string & msg )
+    : std::runtime_error( msg )
+    {
+    }
+};
 
 
 struct Algorithm
 {
-    const Stetting & _settings;
+    const Settings & _settings;
     cv::VideoCapture _video_stream;
     cv::CascadeClassifier _classifier;
-
+    std::queue<const cv::Mat> _faces_buff;
 
     Algorithm( const Settings & s )
     : _settings{ s }
     , _video_stream{ create_stream( s ) }
     , _classifier{ create_classifier( s, "haarcascade_frontalface_alt") }
+    . _faces_buff{}
     {
         // todo: consider turning '_classifier' into a verctor
         // and adding at least 'haarcascade_eye_tree_eyeglasses'.
     }
 
 
-private:
-    static cv::VideoCapture create_stream( const Setting & s )
+    cv::Mat get_one_face()
     {
-        auto vid = [ &s ] ()
+        while( _faces_buff.empty() )
         {
-            const auto & v = s.video_file;
+            cv::Mat frame;
+            cap >> frame;
+            assert( ! frame.empty() );
+            crop_face();
+            push_to_buff();
+        }
+
+        const auto ret = _faces_buff.front();
+        _faces_buff.pop();
+        return ret;
+    }
+
+
+private:
+    static cv::VideoCapture create_stream( const Settings & s )
+    {
+        const auto & v = s.video_file;
+
+        auto vid = [ &v ] ()
+        {
             if( v.empty() )
             {
                 return cv::VideoCapture( 0 );
@@ -91,29 +115,17 @@ private:
     }
 
 
- /** Global variables */
-// /usr/share/opencv/haarcascades
-std::string face_cascade_name{ "/usr/share/opencv/haarcascades/haarcascade_frontalface_alt.xml"};
-std::string eyes_cascade_name{ "/usr/share/opencv/haarcascades/haarcascade_eye_tree_eyeglasses.xml"};
-cv::CascadeClassifier face_cascade;
-cv::CascadeClassifier eyes_cascade;
-std::string window_name = "Capture - Face detection";
-const std::string pictures_dir = "./pictures";
-cv::RNG rng(12345);
+};  // class Algorthm
 
 
 int main( int argc, char *argv[] )
 {
-    cv::VideoCapture cap( "kur.mp4" );
-    if( ! cap.isOpened() )
-    {
-        std::cerr << "Failed to open input video stream.\n";
-        return -1;
-    }
+    Algorithm alg{ settings_run };
+    const auto f = alg.get_one_face();
+}
 
-    if( !face_cascade.load( face_cascade_name ) ){ printf("--(!)Error loading_1\n"); return -1; };
-    if( !eyes_cascade.load( eyes_cascade_name ) ){ printf("--(!)Error loading_2\n"); return -1; };
 
+/*
     while( true )
     {
         cv::Mat frame;
@@ -125,7 +137,6 @@ int main( int argc, char *argv[] )
     return 0;
 }
 
-/** @function detectAndDisplay */
 void detectAndDisplay( cv::Mat frame )
 {
   std::vector<cv::Rect> faces;
@@ -166,3 +177,4 @@ void detectAndDisplay( cv::Mat frame )
     }  // if lpf
   }  // if any faces in image
 }  // foo()
+*/
