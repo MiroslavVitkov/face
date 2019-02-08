@@ -7,6 +7,7 @@
 
 #include <opencv2/opencv.hpp>
 
+#include <queue>
 #include <exception>
 #include <iostream>
 #include <sstream>
@@ -44,13 +45,13 @@ struct Algorithm
     const Settings & _settings;
     cv::VideoCapture _video_stream;
     cv::CascadeClassifier _classifier;
-    std::queue<const cv::Mat> _faces_buff;
+    std::queue<cv::Mat> _faces_buff;
 
     Algorithm( const Settings & s )
     : _settings{ s }
     , _video_stream{ create_stream( s ) }
     , _classifier{ create_classifier( s, "haarcascade_frontalface_alt") }
-    . _faces_buff{}
+    , _faces_buff{}
     {
         // todo: consider turning '_classifier' into a verctor
         // and adding at least 'haarcascade_eye_tree_eyeglasses'.
@@ -62,10 +63,10 @@ struct Algorithm
         while( _faces_buff.empty() )
         {
             cv::Mat frame;
-            cap >> frame;
+            _video_stream >> frame;
             assert( ! frame.empty() );
-            crop_face();
-            push_to_buff();
+            //crop_face();
+            //push_to_buff();
         }
 
         const auto ret = _faces_buff.front();
