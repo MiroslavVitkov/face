@@ -65,7 +65,7 @@ struct Algorithm
             cv::Mat frame;
             _video_stream >> frame;
             assert( ! frame.empty() );
-            std::cout << "new face!\n";
+            lbp_detect( frame );
             //crop_face();
             //push_to_buff();
         }
@@ -117,18 +117,28 @@ private:
     }
 
 
-    private static void lbp_detect( const cv::Mat & in )
+    void lbp_detect( const cv::Mat & in )
     {
         cv::Mat gray;
-        cv::cvtColor( in, gray, CV_BGR2GRAY )
-        cv::equalizeHist( frame_gray, frame_gray );
-        //std::vector<cv::Rect> faces;
-        _classifier.detectMultiScale( gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, cv::Size(30, 30) );
-        // do low-pass filtering over 3 frames to evade false positives
+
+        // Convert to 8-bit single channel image.
+        cv::cvtColor( in, gray, CV_BGR2GRAY );
+
+        // Increase contrast in under- or over-exposed areas of the image.
+        cv::equalizeHist( gray, gray );
+
+        std::vector<cv::Rect> faces;
+        _classifier.detectMultiScale( gray, faces );
+        // Perhaps do low-pass filtering over 3 consecutive frames to evade false positives.
+
+        if( ! faces.empty() )
+        {
+            std::cout << "BIACHHHH!\n";
+        }
     }
 
 
-};  // class Algorthm
+};  // struct Algorthm
 
 
 int main( int argc, char *argv[] )
