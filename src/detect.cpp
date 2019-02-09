@@ -65,6 +65,7 @@ struct Algorithm
             cv::Mat frame;
             _video_stream >> frame;
             assert( ! frame.empty() );
+            std::cout << "new face!\n";
             //crop_face();
             //push_to_buff();
         }
@@ -116,6 +117,17 @@ private:
     }
 
 
+    private static void lbp_detect( const cv::Mat & in )
+    {
+        cv::Mat gray;
+        cv::cvtColor( in, gray, CV_BGR2GRAY )
+        cv::equalizeHist( frame_gray, frame_gray );
+        //std::vector<cv::Rect> faces;
+        _classifier.detectMultiScale( gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, cv::Size(30, 30) );
+        // do low-pass filtering over 3 frames to evade false positives
+    }
+
+
 };  // class Algorthm
 
 
@@ -126,41 +138,8 @@ int main( int argc, char *argv[] )
 }
 
 
+
 /*
-    while( true )
-    {
-        cv::Mat frame;
-        cap >> frame;
-        assert( ! frame.empty() );
-        detectAndDisplay( frame );
-    }
-
-    return 0;
-}
-
-void detectAndDisplay( cv::Mat frame )
-{
-  std::vector<cv::Rect> faces;
-  cv::Mat frame_gray;
-
-  cv::cvtColor( frame, frame_gray, CV_BGR2GRAY );
-  cv::equalizeHist( frame_gray, frame_gray );
-
-  //-- Detect faces
-  face_cascade.detectMultiScale( frame_gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, cv::Size(30, 30) );
-
-  // If there are any faces in the picture, count to 3. If this is the third in a row,
-  // record the picture. This protects from false positives.
-  static unsigned consecutive_frames_with_faces = 0;
-  if(faces.empty())
-  {
-    consecutive_frames_with_faces = 0;
-  } else
-  {
-    consecutive_frames_with_faces++;
-    std::cout << faces.size() << " faces in image, image_count is " << consecutive_frames_with_faces << std::endl;
-
-    static unsigned picture_number = 0;
     if(consecutive_frames_with_faces >= 3)
     {
       // Form file name.
