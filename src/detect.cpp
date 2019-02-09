@@ -40,18 +40,26 @@ struct Exception : public std::runtime_error
 };
 
 
-struct Algorithm
+struct FaceDetector
+{
+};
+
+
+// Detect faces usng Local Bnary Patterns.
+struct LBP : public FaceDetector
 {
     const Settings & _settings;
     cv::VideoCapture _video_stream;
     cv::CascadeClassifier _classifier;
-    std::queue<cv::Mat> _faces_buff;
+    std::queue<cv::Mat> _detected_faces;
+    std::vector<cv::Rect> _facerect_buff;
 
-    Algorithm( const Settings & s )
+    LBP( const Settings & s )
     : _settings{ s }
     , _video_stream{ create_stream( s ) }
     , _classifier{ create_classifier( s, "haarcascade_frontalface_alt") }
-    , _faces_buff{}
+    , _detected_faces{}
+    , _facerect_buff{}
     {
         // todo: consider turning '_classifier' into a verctor
         // and adding at least 'haarcascade_eye_tree_eyeglasses'.
@@ -60,18 +68,27 @@ struct Algorithm
 
     cv::Mat get_one_face()
     {
-        while( _faces_buff.empty() )
+        cv::Mat frame;
+
+        // Block untll a frame with faces is seen.
+        while( _facerect_buff.empty() )
         {
-            cv::Mat frame;
             _video_stream >> frame;
             assert( ! frame.empty() );
-            lbp_detect( frame );
-            //crop_face();
-            //push_to_buff();
+            detect( frame );
         }
 
-        const auto ret = _faces_buff.front();
-        _faces_buff.pop();
+        // Crop faces out of the video frame.
+        for( const auto & f : _facerect_buff )
+        {
+            const cv::Mat cropped = frame( f );
+            _detected_faces.push( cropped );
+        }
+        _facerect_buff.clear();
+
+        // Return a face.
+        const auto ret = _detected_faces.front();
+        _detected_faces.pop();
         return ret;
     }
 
@@ -117,8 +134,10 @@ private:
     }
 
 
-    void lbp_detect( const cv::Mat & in )
+    void detect( const cv::Mat & in )
     {
+        assert( _facerect_buff.empty() );
+
         cv::Mat gray;
 
         // Convert to 8-bit single channel image.
@@ -127,44 +146,17 @@ private:
         // Increase contrast in under- or over-exposed areas of the image.
         cv::equalizeHist( gray, gray );
 
-        std::vector<cv::Rect> faces;
-        _classifier.detectMultiScale( gray, faces );
+        _classifier.detectMultiScale( gray, _facerect_buff );
         // Perhaps do low-pass filtering over 3 consecutive frames to evade false positives.
-
-        if( ! faces.empty() )
-        {
-            std::cout << "BIACHHHH!\n";
-        }
     }
 
 
-};  // struct Algorthm
+};  // struct LBP
 
 
 int main( int argc, char *argv[] )
 {
-    Algorithm alg{ settings_run };
+    LBP alg{ settings_run };
     const auto f = alg.get_one_face();
+    cv::imwrite( "kur.jpg", f );
 }
-
-
-
-/*
-    if(consecutive_frames_with_faces >= 3)
-    {
-      // Form file name.
-      std::stringstream ss;
-      ss << pictures_dir << "/face_" << picture_number++ << ".jpg";
-      std::cout << "Writing picture " << ss.str() << std::endl;
-
-      // Crop the faces from the picture and write them to a file.
-      for(size_t i = 0; i < faces.size(); ++i)
-      {
-        cv::Rect myROI(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
-        cv::Mat cropped = frame(myROI);
-        cv::imwrite(ss.str(), cropped);
-      }  // for each face in image
-    }  // if lpf
-  }  // if any faces in image
-}  // foo()
-*/
