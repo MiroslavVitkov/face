@@ -8,9 +8,8 @@ find_package( OpenCV REQUIRED )
 add_executable( detect src/detect.cpp )
 target_link_libraries( detect ${OpenCV_LIBS} )
 
-# Executable, trains and algorithm over all face pictures in subfolders.
-#add_executable( train src/train.cpp )
-#target_link_libraries( train ${OpenCV_LIBS} )
+add_executable( train src/train.cpp )
+target_link_libraries( train ${OpenCV_LIBS} )
 
 # Executable, wathces the camera and recognises faces, needs training.
 #add_executable( recognise src/recognise.cpp )

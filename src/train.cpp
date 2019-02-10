@@ -1,3 +1,11 @@
+// Does stuff.
+//
+// build-deps: libopencv-dev
+// run-deps
+
+
+#include <opencv2/opencv.hpp>
+
 #include <dirent.h>
 
 #include <opencv2/core.hpp>
@@ -79,9 +87,10 @@ Images read_images( std::string path )
 }
 
 
-cv::Ptr<cv::FaceRecognizer> create_model( const Images &im )
+/*cv::Ptr<cv::FaceRecognizer> create_model( const Images &im )
 {
-    auto model = cv::createLBPHFaceRecognizer();
+//    auto model = cv::createLBPHFaceRecognizer();
+ auto model = cv::createLBPHFaceRecognizer();
     model.train( im._images, im._labels );
     model.setLabelsInfo( im._id_to_name );
 };
@@ -91,7 +100,7 @@ void serialize_to_file( cv::Ptr<cv::FaceRecognizer> model, std::string fname )
 {
     model->save( fname );
 }
-
+*/
 
 int main( int argc, char **argv )
 {
@@ -108,8 +117,8 @@ int main( int argc, char **argv )
     const std::string out_path( argv[2] );
 
     auto im = read_images( imm_path );
-    auto model = create_model( im );
-    serialize_to_file( model, out_path );
+//    auto model = create_model( im );
+//    serialize_to_file( model, out_path );
 
     return 0;
 }
