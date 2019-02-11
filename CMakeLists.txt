@@ -11,6 +11,5 @@ target_link_libraries( detect ${OpenCV_LIBS} )
 add_executable( train src/train.cpp )
 target_link_libraries( train ${OpenCV_LIBS} )
 
-# Executable, wathces the camera and recognises faces, needs training.
-#add_executable( recognise src/recognise.cpp )
-#target_link_libraries( recognise ${OpenCV_LIBS} )
+add_executable( recognise src/recognise.cpp )
+target_link_libraries( recognise ${OpenCV_LIBS} )

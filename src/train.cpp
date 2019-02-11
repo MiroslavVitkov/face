@@ -8,7 +8,6 @@
 
 #include <dirent.h>
 
-#include <cassert>
 #include <iostream>
 #include <map>
 #include <vector>
