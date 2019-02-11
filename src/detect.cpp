@@ -197,7 +197,7 @@ private:
 };  // struct LBP
 
 
-int main( int argc, char *argv[] )
+int main( int, char ** )
 {
     LBP alg{ settings_run };
     alg.record_show_video();

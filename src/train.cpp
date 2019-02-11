@@ -8,10 +8,6 @@
 
 #include <dirent.h>
 
-#include <opencv2/core.hpp>
-#include <opencv2/face.hpp>
-#include <opencv2/highgui.hpp>
-
 #include <cassert>
 #include <iostream>
 #include <map>
@@ -30,7 +26,7 @@ struct Images
 };
 
 
-// Returns true if entry is the unix current of parent directory(dir).
+// True if entry is the unix current of parent directory.
 bool is_auto_dir( struct dirent *ent )
 {
     bool is_currdir = ! std::string( ent->d_name ).compare( "." );
