@@ -42,7 +42,7 @@ Images read_images( std::string path )
 {
     // Go to selected path.
     DIR *parent_dir = opendir( path.c_str() );
-    if( parent_dir == NULL)
+    if( parent_dir == nullptr)
     {
         std::cerr << "Could not open target location.";
         std::cerr << "Make sure path to a directory was supplied as argv[1]." << std::endl;
@@ -52,19 +52,19 @@ Images read_images( std::string path )
     // Iterate each subdir.
     Images::Id i = 0;
     Images out;
-    for( struct dirent *d1; d1; ++i, d1 = readdir(parent_dir) )
+    while( struct dirent * d1 = readdir(parent_dir) )
     {
         if( is_auto_dir(d1) )  continue;
 
         DIR *dir = opendir( (path + d1->d_name).c_str() );
-        if( dir == NULL )
+        if( dir == nullptr )
         {
             std::cerr << "Failed opening subdirectory " << d1->d_name << std::endl;
             continue;
         }
 
         // Read all images inside the dir.
-        for( struct dirent *d2; d2; d2 = readdir( dir ) )
+        while( struct dirent * d2 = readdir( dir ) )
         {
             if( is_auto_dir(d2) )  continue;
             std::string file = path + d1->d_name + '/' + d2->d_name;
