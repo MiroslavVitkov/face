@@ -81,16 +81,15 @@ Images read_images( std::string path )
     return out;
 }
 
+using namespace cv;
+//Ptr<FaceRecognizer> create_model( const Images &im )
+//{
+//    auto model = createLBPHFaceRecognizer();
+//    model.train( im._images, im._labels );
+//    model.setLabelsInfo( im._id_to_name );
+//};
 
-/*cv::Ptr<cv::FaceRecognizer> create_model( const Images &im )
-{
-//    auto model = cv::createLBPHFaceRecognizer();
- auto model = cv::createLBPHFaceRecognizer();
-    model.train( im._images, im._labels );
-    model.setLabelsInfo( im._id_to_name );
-};
-
-
+/*
 void serialize_to_file( cv::Ptr<cv::FaceRecognizer> model, std::string fname )
 {
     model->save( fname );

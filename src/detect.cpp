@@ -5,10 +5,11 @@
 // run-deps: haarcascade XMLs
 
 
+#include "iface.h"
+
 #include <opencv2/opencv.hpp>
 
 #include <queue>
-#include <exception>
 #include <iostream>
 #include <sstream>
 
@@ -21,33 +22,24 @@ struct Settings
 };
 
 
-Settings settings_test{ .cascades_dir{ "/usr/share/opencv/haarcascades" }
-                      , .video_file{ "kur.mp4" }
-                      , .output_dir{} };
+const Settings settings_test{ .cascades_dir{ "/usr/share/opencv/haarcascades" }
+                            , .video_file{ "kur.mp4" }
+                            , .output_dir{} };
 
 
-Settings settings_run{ .cascades_dir{ "/usr/share/opencv/haarcascades" }
-                      , .video_file{}
-                      , .output_dir{} };
-
-
-struct Exception : public std::runtime_error
-{
-    Exception( const std::string & msg )
-    : std::runtime_error( msg )
-    {
-    }
-};
-
-
-struct FaceDetector
-{
-};
+const Settings settings_run{ .cascades_dir{ "/usr/share/opencv/haarcascades" }
+                           , .video_file{}
+                           , .output_dir{} };
 
 
 // Detect faces usng Local Bnary Patterns.
-struct LBP : public FaceDetector
+struct LBP : public Detector
 {
+
+    virtual std::vector<cv::Mat> get_faces( const cv::Mat & frame, double min_confidence = 0.8 ) {(void)frame; (void)min_confidence; return {};}
+
+
+
     const Settings & _settings;
     cv::VideoCapture _video_stream;
     cv::CascadeClassifier _classifier;
