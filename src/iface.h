@@ -17,19 +17,26 @@ struct Exception : public std::runtime_error
 };
 
 
+struct FrameSource
+{
+    virtual cv::Mat operator>>( FrameSource & ) = 0;
+    virtual ~FrameSource() = default;
+};
+
+
+struct FrameSink
+{
+    virtual void operator<<( const cv::Mat & ) = 0;
+    virtual ~FrameSink() = default;
+};
+
+
 struct Detector
 {
     virtual std::vector<cv::Mat> get_faces( const cv::Mat & frame
                                           , double min_confidence = 0.8
                                           ) = 0;
     virtual ~Detector() = default;
-};
-
-
-struct FrameStream
-{
-    virtual cv::Mat operator>>( FrameStream & ) = 0;
-    virtual ~FrameStream() = 0;
 };
 
 

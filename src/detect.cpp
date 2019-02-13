@@ -1,5 +1,5 @@
 // Detect faces in a video file or a usb camera.
-// Outputs cropped faces on stdout or in an image folder.
+// Output cropped faces on stdout or in an image folder.
 //
 // build-deps: libopencv-dev
 // run-deps: haarcascade XMLs
@@ -14,27 +14,16 @@
 #include <sstream>
 
 
-struct Settings
-{
-    const std::string cascades_dir;
-    const std::string video_file;  // empty -> capture from camera
-    const std::string output_dir;  // empty -> stdout
-};
-
-
-const Settings settings_test{ .cascades_dir{ "/usr/share/opencv/haarcascades" }
-                            , .video_file{ "kur.mp4" }
-                            , .output_dir{} };
-
-
-const Settings settings_run{ .cascades_dir{ "/usr/share/opencv/haarcascades" }
-                           , .video_file{}
-                           , .output_dir{} };
-
-
 // Detect faces usng Local Bnary Patterns.
 struct LBP : public Detector
 {
+ //   class kur{};
+    struct Settings
+    {
+        const std::string cascades_dir;
+        const std::string video_file;  // empty -> capture from camera
+        const std::string output_dir;  // empty -> stdout
+    };
 
     virtual std::vector<cv::Mat> get_faces( const cv::Mat & frame, double min_confidence = 0.8 ) {(void)frame; (void)min_confidence; return {};}
 
@@ -187,6 +176,16 @@ private:
 
 
 };  // struct LBP
+
+
+const LBP::Settings settings_test{ .cascades_dir{ "/usr/share/opencv/haarcascades" }
+                            , .video_file{ "kur.mp4" }
+                            , .output_dir{} };
+
+
+const LBP::Settings settings_run{ .cascades_dir{ "/usr/share/opencv/haarcascades" }
+                           , .video_file{}
+                           , .output_dir{} };
 
 
 int main( int, char ** )
