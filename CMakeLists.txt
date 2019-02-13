@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.13)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -lstdc++ -Wfatal-errors -Wall -Wextra -Wpedantic")
 find_package( OpenCV REQUIRED )
 
-add_executable( detect src/detect.cpp )
+add_executable( detect src/frame_source.cpp src/detect.cpp )
 target_link_libraries( detect ${OpenCV_LIBS} )
 
 add_executable( train src/train.cpp )
