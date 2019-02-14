@@ -64,5 +64,22 @@ struct VideoReader : public FrameStream
 };
 
 
+// Detect faces usng Local Bnary Patterns.
+// https://docs.opencv.org/3.2.0/d1/de5/classcv_1_1CascadeClassifier.html
+template < typename  >
+struct LBP : public Detector
+{
+    FrameStream & _frame_stream;
+    cv::CascadeClassifier _classifier;
+    std::queue<cv::Mat> _detected_faces;
+    std::vector<cv::Rect> _facerect_buff;
+
+    LBP( const Settings & s );
+    std::vector<cv::Mat> get_faces( const cv::Mat & frame
+                                  , double min_confidence = 0.8
+                                  ) override;
+};
+
+
 
 #endif // IFACE_H

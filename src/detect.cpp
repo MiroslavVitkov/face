@@ -7,44 +7,46 @@
 
 #include "iface.h"
 
-#include <opencv2/opencv.hpp>
-
 #include <queue>
 #include <iostream>
 #include <sstream>
 
 
-// Detect faces usng Local Bnary Patterns.
-struct LBP : public Detector
+cv::VideoCapture create_stream( const LBP::Settings & s )
 {
- //   class kur{};
-    struct Settings
+    const auto & v = s.video_file;
+
+    auto vid = [ &v ] ()
     {
-        const std::string cascades_dir;
-        const std::string video_file;  // empty -> capture from camera
-        const std::string output_dir;  // empty -> stdout
-    };
+        if( v.empty() )
+        {
+            return cv::VideoCapture( 0 );
+        }
+        else
+        {
+            return cv::VideoCapture( v );
+        }
+    } ();
 
-    virtual std::vector<cv::Mat> get_faces( const cv::Mat & frame, double min_confidence = 0.8 ) {(void)frame; (void)min_confidence; return {};}
-
-
-
-    const Settings & _settings;
-    cv::VideoCapture _video_stream;
-    cv::CascadeClassifier _classifier;
-    std::queue<cv::Mat> _detected_faces;
-    std::vector<cv::Rect> _facerect_buff;
-
-    LBP( const Settings & s )
-    : _settings{ s }
-    , _video_stream{ create_stream( s ) }
-    , _classifier{ create_classifier( s, "haarcascade_frontalface_alt") }
-    , _detected_faces{}
-    , _facerect_buff{}
+    if( ! vid.isOpened() )
     {
-        // todo: consider turning '_classifier' into a verctor
-        // and adding at least 'haarcascade_eye_tree_eyeglasses'.
+        Exception e{ "Failed to open input video stream: " + v };
+        throw e;
     }
+
+    return vid;
+}
+
+LBP::LBP( const Settings & s )
+: _settings{ s }
+, _video_stream{ create_stream( s ) }
+, _classifier{ create_classifier( s, "haarcascade_frontalface_alt") }
+, _detected_faces{}
+, _facerect_buff{}
+{
+    // todo: consider turning '_classifier' into a verctor
+    // and adding at least 'haarcascade_eye_tree_eyeglasses'.
+}
 
 
     cv::Mat get_one_face()
@@ -117,30 +119,7 @@ struct LBP : public Detector
 
 
 private:
-    static cv::VideoCapture create_stream( const Settings & s )
-    {
-        const auto & v = s.video_file;
 
-        auto vid = [ &v ] ()
-        {
-            if( v.empty() )
-            {
-                return cv::VideoCapture( 0 );
-            }
-            else
-            {
-                return cv::VideoCapture( v );
-            }
-        } ();
-
-        if( ! vid.isOpened() )
-        {
-            Exception e{ "Failed to open input video stream: " + v };
-            throw e;
-        }
-
-        return vid;
-    }
 
 
     static cv::CascadeClassifier create_classifier( const Settings & s
