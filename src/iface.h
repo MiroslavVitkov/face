@@ -19,7 +19,7 @@ struct Exception : public std::runtime_error
 struct FrameSource
 {
     virtual FrameSource & operator>>( cv::Mat & frame ) = 0;
-    virtual operator bool() const = 0;
+    virtual operator bool() const = 0;  // true if last operation was successful
     virtual ~FrameSource() = default;
 };
 
@@ -74,6 +74,7 @@ struct VideoReader : public FrameSource
 
 private:
     cv::VideoCapture _video_stream;
+    bool _good;
 };
 
 
@@ -83,6 +84,10 @@ private:
 struct DirReader : public FrameSource
 {
     DirReader( const std::string & path );
+    DirReader( DirReader && );
+    ~DirReader() override;
+
+    operator bool() const override;
     DirReader & operator>>( cv::Mat & face ) override;
     std::string get_label() const;
 
