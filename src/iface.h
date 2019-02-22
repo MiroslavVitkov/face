@@ -3,6 +3,7 @@
 
 #include <opencv2/opencv.hpp>
 
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -11,14 +12,22 @@
 struct Exception : public std::runtime_error
 {
     Exception( const std::string & msg )
-    : std::runtime_error( msg ) { }
+        : std::runtime_error( msg ) { }
 };
 
 
-struct FrameStream
+struct FrameSource
 {
-    virtual FrameStream & operator>>( cv::Mat & frame ) = 0;
-    virtual ~FrameStream() = default;
+    virtual FrameSource & operator>>( cv::Mat & frame ) = 0;
+    virtual operator bool() const = 0;
+    virtual ~FrameSource() = default;
+};
+
+
+struct FrameSink
+{
+    virtual FrameSink & operator<<( const cv::Mat & frame ) = 0;
+    virtual ~FrameSink() = default;
 };
 
 
@@ -40,7 +49,7 @@ struct Recogniser
 };
 
 
-struct Camera : public FrameStream
+struct Camera : public FrameSource
 {
     enum class Id : int
     {
@@ -48,33 +57,67 @@ struct Camera : public FrameStream
         _first_usb_camera = 0
     };
 
-    cv::VideoCapture _video_stream;
-
-    Camera( Id );
+    Camera( Id = Id::_first_usb_camera );
+    operator bool() const override { return true; }
     Camera & operator>>( cv::Mat & frame ) override;
+
+private:
+    cv::VideoCapture _video_stream;
 };
 
 
-struct VideoReader : public FrameStream
+struct VideoReader : public FrameSource
 {
-    cv::VideoCapture _video_stream;
-
     VideoReader( const std::string & path );
+    operator bool() const override;
     VideoReader & operator>>( cv::Mat & frame ) override;
+
+private:
+    cv::VideoCapture _video_stream;
+};
+
+
+// A directory with one subdirectory per subject.
+// Subdirectory names are the labels.
+// Each subdirectory contains cropped faces of that one subject.
+struct DirReader : public FrameSource
+{
+    DirReader( const std::string & path );
+    DirReader & operator>>( cv::Mat & face ) override;
+    std::string get_label() const;
+
+private:
+    struct Impl;
+    std::unique_ptr<Impl> _impl;
+};
+
+
+std::vector<DirReader> get_subdirs( const std::string dataset_path );
+
+
+struct VideoWriter : public FrameSink
+{
+    cv::VideoWriter _video_stream;
+
+    VideoWriter( cv::Size, const std::string path );
+    VideoWriter & operator<<( const cv::Mat & frame ) override;
+};
+
+
+struct DirWriter : public FrameSink
+{
+    DirWriter( const std::string path );
+    DirWriter & operator<<( const cv::Mat & frame ) override;
 };
 
 
 // Detect faces usng Local Bnary Patterns.
 // https://docs.opencv.org/3.2.0/d1/de5/classcv_1_1CascadeClassifier.html
-template < typename  >
 struct LBP : public Detector
 {
-    FrameStream & _frame_stream;
     cv::CascadeClassifier _classifier;
-    std::queue<cv::Mat> _detected_faces;
-    std::vector<cv::Rect> _facerect_buff;
 
-    LBP( const Settings & s );
+    LBP( const std::string & cascades_dir );
     std::vector<cv::Mat> get_faces( const cv::Mat & frame
                                   , double min_confidence = 0.8
                                   ) override;
