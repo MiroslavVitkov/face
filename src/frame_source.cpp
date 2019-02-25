@@ -17,6 +17,22 @@ Camera::Camera( Camera::Id id )
 }
 
 
+cv::Size get_stream_size( const cv::VideoCapture & stream )
+{
+    const auto w = stream.get( cv::CAP_PROP_FRAME_WIDTH );
+    const auto h = stream.get( cv::CAP_PROP_FRAME_HEIGHT );
+    const auto ww = static_cast<cv::Size::value_type>( round( w ) );
+    const auto hh = static_cast<cv::Size::value_type>( round( h ) );
+    return { ww, hh };
+}
+
+
+cv::Size Camera::get_size() const
+{
+    return get_stream_size( _video_stream );
+}
+
+
 Camera & Camera::operator>>( cv::Mat & frame )
 {
     _video_stream >> frame;
@@ -39,6 +55,12 @@ VideoReader::VideoReader( const std::string & path )
 VideoReader::operator bool() const
 {
     return _good;
+}
+
+
+cv::Size VideoReader::get_size() const
+{
+    return get_stream_size( _video_stream );
 }
 
 
@@ -90,19 +112,48 @@ bool is_auto_dir( const struct dirent * const ent )
 }
 
 
+cv::Size calc_largest_size( const std::string & path )
+{
+    cv::Size ret{};
+
+    DirReader r{ path, false };
+    cv::Mat f;
+    while( r >> f )
+    {
+        if( f.size().width > ret.width )
+        {
+            ret = cv::Size{ f.size().width, ret.height };
+        }
+        if( f.size().height > ret.height )
+        {
+            ret = cv::Size{ ret.width, f.size().height };
+        }
+    }
+
+    return ret;
+}
+
+
 struct DirReader::Impl
 {
-    Impl( const std::string & path )
+    Impl( const std::string & path, bool calc_size )
         : _path{ path }
         , _label{ get_last_dir( path ) }
         , _dir{ opendir( path.c_str() ) }
         , _stream{ readdir( _dir ) }
         , _good{ true }
+        , _size{}
     {
         if( ! _dir || ! _stream )
         {
             Exception e{ "Failed to open faces directory: " + path };
             throw e;
+        }
+
+        // Expensive!
+        if( calc_size )
+        {
+             _size = calc_largest_size( _path );
         }
     }
 
@@ -113,11 +164,22 @@ struct DirReader::Impl
     }
 
 
+    cv::Size get_size() const
+    {
+        assert( _size != cv::Size{} );
+        return _size;
+    }
+
+
     Impl & operator>>( cv::Mat & face )
     {
         assert( _dir );
         _stream = readdir( _dir );
-        assert( _stream );
+        if( ! _stream )
+        {
+            _good = false;
+            return *this;
+        }
 
         if( is_auto_dir( _stream ) )
         {
@@ -125,8 +187,8 @@ struct DirReader::Impl
         }
 
         std::string file = _path + '/' + _stream->d_name;
-        auto frame = cv::imread( file, CV_LOAD_IMAGE_GRAYSCALE );
-        if( ! frame.data )
+        face = cv::imread( file, CV_LOAD_IMAGE_GRAYSCALE );
+        if( ! face.data )
         {
             Exception e{ "Failed to read face file: " + file };
             throw e;
@@ -154,11 +216,12 @@ private:
     DIR * _dir;
     dirent * _stream;
     bool _good;
+    cv::Size _size;  // largest width and height
 };
 
 
-DirReader::DirReader( const std::string & path )
-    : _impl{ std::make_unique<Impl>( path ) }
+DirReader::DirReader( const std::string & path, bool calc_size )
+    : _impl{ std::make_unique<Impl>( path, calc_size ) }
 {
 }
 
@@ -180,6 +243,12 @@ DirReader::operator bool() const
 }
 
 
+cv::Size DirReader::get_size() const
+{
+    return _impl->get_size();
+}
+
+
 DirReader & DirReader::operator>>( cv::Mat & face )
 {
     *_impl >> face;
@@ -193,7 +262,8 @@ std::string DirReader::get_label() const
 }
 
 
-std::vector<DirReader> get_subdirs( const std::string dataset_path )
+std::vector<DirReader> get_subdirs( const std::string dataset_path
+                                  , bool calc_size )
 {
     DIR * dir = opendir( dataset_path.c_str() );
     if( ! dir )
@@ -215,7 +285,7 @@ std::vector<DirReader> get_subdirs( const std::string dataset_path )
         std::string dirpath = dataset_path + '/' + stream->d_name;
         try
         {
-            out.emplace_back( DirReader{ dirpath } );
+            out.emplace_back( DirReader{ dirpath, calc_size } );
         }
         catch( ... )
         {

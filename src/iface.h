@@ -20,6 +20,7 @@ struct FrameSource
 {
     virtual FrameSource & operator>>( cv::Mat & frame ) = 0;
     virtual operator bool() const = 0;  // true if last operation was successful
+    virtual cv::Size get_size() const = 0;
     virtual ~FrameSource() = default;
 };
 
@@ -59,6 +60,7 @@ struct Camera : public FrameSource
 
     Camera( Id = Id::_first_usb_camera );
     operator bool() const override { return true; }
+    cv::Size get_size() const override;
     Camera & operator>>( cv::Mat & frame ) override;
 
 private:
@@ -70,6 +72,7 @@ struct VideoReader : public FrameSource
 {
     VideoReader( const std::string & path );
     operator bool() const override;
+    cv::Size get_size() const override;
     VideoReader & operator>>( cv::Mat & frame ) override;
 
 private:
@@ -83,12 +86,13 @@ private:
 // Each subdirectory contains cropped faces of that one subject.
 struct DirReader : public FrameSource
 {
-    DirReader( const std::string & path );
+    DirReader( const std::string & path, bool calc_size = false );
     DirReader( DirReader && );
     ~DirReader() override;
 
     operator bool() const override;
     DirReader & operator>>( cv::Mat & face ) override;
+    cv::Size get_size() const override;
     std::string get_label() const;
 
 private:
@@ -97,15 +101,24 @@ private:
 };
 
 
-std::vector<DirReader> get_subdirs( const std::string dataset_path );
+std::vector<DirReader> get_subdirs( const std::string dataset_path
+                                  , bool calc_size = false );
 
 
 struct VideoWriter : public FrameSink
 {
-    cv::VideoWriter _video_stream;
+    // How to fit smaller frames to the video.
+    enum class Fit{ _border };
 
-    VideoWriter( cv::Size, const std::string path );
+    VideoWriter( const std::string path
+               , cv::Size
+               , Fit fit_mode = Fit::_border );
     VideoWriter & operator<<( const cv::Mat & frame ) override;
+
+private:
+    cv::VideoWriter _video_stream;
+    const cv::Size _size;
+    const Fit _fit;
 };
 
 
