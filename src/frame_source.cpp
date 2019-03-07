@@ -133,7 +133,7 @@ cv::Size calc_largest_size( const std::string & path )
     return ret;
 }
 
-
+#include <iostream>
 struct DirReader::Impl
 {
     Impl( const std::string & path, bool calc_size )
@@ -141,7 +141,6 @@ struct DirReader::Impl
         , _label{ get_last_dir( path ) }
         , _dir{ opendir( path.c_str() ) }
         , _stream{ readdir( _dir ) }
-        , _good{ true }
         , _size{}
     {
         if( ! _dir || ! _stream )
@@ -160,7 +159,7 @@ struct DirReader::Impl
 
     operator bool() const
     {
-        return _good;
+        return !! _stream;
     }
 
 
@@ -174,19 +173,21 @@ struct DirReader::Impl
     Impl & operator>>( cv::Mat & face )
     {
         assert( _dir );
-        _stream = readdir( _dir );
+
         if( ! _stream )
         {
-            _good = false;
             return *this;
         }
 
         if( is_auto_dir( _stream ) )
         {
+            _stream = readdir( _dir );
             return ( *this >> face );
         }
 
         std::string file = _path + '/' + _stream->d_name;
+        _stream = readdir( _dir );
+
         face = cv::imread( file, CV_LOAD_IMAGE_GRAYSCALE );
         if( ! face.data )
         {
@@ -215,7 +216,6 @@ private:
     const std::string _label;
     DIR * _dir;
     dirent * _stream;
-    bool _good;
     cv::Size _size;  // largest width and height
 };
 
