@@ -13,7 +13,7 @@ VideoWriter::VideoWriter( const std::string path
 }
 
 
-cv::Mat fit_frame( const cv::Mat & in, cv::Size target, VideoWriter::Fit mode )
+cv::Mat fit_frame( const cv::Mat & in, cv::Size target, VideoWriter::Fit )
 {
     const auto iw = in.size().width;
     const auto ih = in.size().height;

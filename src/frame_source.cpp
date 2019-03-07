@@ -133,17 +133,17 @@ cv::Size calc_largest_size( const std::string & path )
     return ret;
 }
 
-#include <iostream>
+
 struct DirReader::Impl
 {
     Impl( const std::string & path, bool calc_size )
         : _path{ path }
         , _label{ get_last_dir( path ) }
         , _dir{ opendir( path.c_str() ) }
-        , _stream{ readdir( _dir ) }
+        , _stream{ nullptr }
         , _size{}
     {
-        if( ! _dir || ! _stream )
+        if( ! _dir )
         {
             Exception e{ "Failed to open faces directory: " + path };
             throw e;
@@ -174,6 +174,7 @@ struct DirReader::Impl
     {
         assert( _dir );
 
+        _stream = readdir( _dir );
         if( ! _stream )
         {
             return *this;
@@ -181,14 +182,12 @@ struct DirReader::Impl
 
         if( is_auto_dir( _stream ) )
         {
-            _stream = readdir( _dir );
             return ( *this >> face );
         }
 
         std::string file = _path + '/' + _stream->d_name;
-        _stream = readdir( _dir );
 
-        face = cv::imread( file, CV_LOAD_IMAGE_GRAYSCALE );
+        face = cv::imread( file, CV_LOAD_IMAGE_UNCHANGED );
         if( ! face.data )
         {
             Exception e{ "Failed to read face file: " + file };
