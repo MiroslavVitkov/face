@@ -14,6 +14,8 @@ Camera::Camera( Camera::Id id )
                    + std::to_string( static_cast< int >( id ) ) };
         throw e;
     }
+
+    assert( _video_stream.get( cv::CAP_PROP_FPS ) - 30 < 0.000001 );
 }
 
 

@@ -8,6 +8,15 @@ void test()
 
     cv::Mat m;
 
+    Camera c{};
+    VideoWriter v{"kur.avi", c.get_size()};
+    while(true)
+    {
+        c >> m;
+        v << m;
+    }
+
+
     for( auto & stream : cc )
     {
         VideoWriter vw{ stream.get_label() + ".avi", stream.get_size() };
@@ -16,7 +25,6 @@ void test()
 
         while( stream >> m )
         {
-            cv::imwrite("kur.jpg", m);
             vw << m;
         }
 

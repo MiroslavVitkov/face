@@ -6,7 +6,7 @@
 VideoWriter::VideoWriter( const std::string path
                         , cv::Size size
                         , Fit fit_mode )
-    : _video_stream{ path, cv:: VideoWriter::fourcc('M','J','P','G'), 10, size }
+    : _video_stream{ path, cv:: VideoWriter::fourcc('M','J','P','G'), 30, size }
     , _size{ size }
     , _fit{ fit_mode }
 {
