@@ -1,6 +1,8 @@
 #include "iface.h"
 
 #include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 
 VideoWriter::VideoWriter( const std::string path
@@ -61,15 +63,17 @@ VideoWriter & VideoWriter::operator<<( const cv::Mat & frame )
 
 
 DirWriter::DirWriter( const std::string path )
+    : _path{ path }
+    , _frame_num{}
 {
-    // todo: implement
-    (void)path;
+    mkdir( path.c_str(), 0777);
 }
 
 
 DirWriter & DirWriter::operator<<( const cv::Mat & frame )
 {
-    // todo: implement
-    (void) frame;
+    const auto name = _path + '/' + std::to_string( _frame_num ) + ".jpg";
+    cv::imwrite( name, frame );
+    ++_frame_num;
     return *this;
 }

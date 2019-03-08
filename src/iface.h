@@ -127,6 +127,10 @@ struct DirWriter : public FrameSink
 {
     DirWriter( const std::string path );
     DirWriter & operator<<( const cv::Mat & frame ) override;
+
+private:
+    const std::string _path;
+    long unsigned _frame_num;
 };
 
 

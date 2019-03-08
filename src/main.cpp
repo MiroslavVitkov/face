@@ -53,9 +53,25 @@ void dir_to_vid( const std::string & path = "./dataset" )
     }
 }
 
+
+void vid_to_dir( const std::string & in = "vid.avi"
+               , const std::string & out = "frames" )
+{
+    cv::Mat m;
+    VideoReader v{ in };
+    DirWriter w{ out };
+
+    while( v >> m )
+    {
+        w << m;
+    }
+}
+
+
 int main()
 {
     cam_to_vid();
     vid_to_vid();
     dir_to_vid();
+    vid_to_dir();
 }
