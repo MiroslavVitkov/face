@@ -14,7 +14,7 @@ void cam_to_vid( const std::string fname_out = "cam.avi" )
         vw << f;
     }
 
-    std::cout << "Wrote video file " << fname_out << " from default camera/n";
+    std::cout << "Wrote video file " << fname_out << " from default camera.\n";
 }
 
 
@@ -35,13 +35,12 @@ void vid_to_vid( const std::string & fname_in = "cam.avi"
 }
 
 
-void test()
+void dir_to_vid( const std::string & path = "./dataset" )
 {
-
-
-
-    auto cc = get_subdirs( "dataset", true );
+    auto cc = get_subdirs( path, true );
     cv::Mat m;
+    std::cout << "Found the following subdirs:\n"
+                 "(writing one video file for each)\n";
     for( auto & stream : cc )
     {
         VideoWriter vw{ stream.get_label() + ".avi", stream.get_size() };
@@ -58,4 +57,5 @@ int main()
 {
     cam_to_vid();
     vid_to_vid();
+    dir_to_vid();
 }

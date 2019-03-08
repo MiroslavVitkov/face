@@ -29,8 +29,8 @@ cv::Mat fit_frame( const cv::Mat & in, cv::Size target, VideoWriter::Fit )
     const auto left = (tw - iw) / 2;
     const auto right = (tw - iw) / 2 + (tw - iw) % 2;
 
-    cv::Mat out;  // BORDER_CONSTANT
-    cv::copyMakeBorder( in, out, top, bottom, left, right, cv::BORDER_DEFAULT );
+    cv::Mat out;
+    cv::copyMakeBorder( in, out, top, bottom, left, right, cv::BORDER_CONSTANT );
 
     assert( out.size().width == target.width );
     assert( out.size().height == target.height );
