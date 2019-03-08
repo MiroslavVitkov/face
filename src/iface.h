@@ -87,7 +87,15 @@ private:
 // Each subdirectory contains cropped faces of that one subject.
 struct DirReader : public FrameSource
 {
-    DirReader( const std::string & path, bool calc_size = false );
+    enum class ReadMode
+    {
+        _unchanged,
+        _grayscale,
+    };
+
+    DirReader( const std::string & path
+             , bool calc_size = false
+             , ReadMode rm = ReadMode::_unchanged );
     DirReader( DirReader && );
     ~DirReader() override;
 

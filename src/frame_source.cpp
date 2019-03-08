@@ -138,9 +138,10 @@ cv::Size calc_largest_size( const std::string & path )
 
 struct DirReader::Impl
 {
-    Impl( const std::string & path, bool calc_size )
+    Impl( const std::string & path, bool calc_size, ReadMode rm )
         : _path{ path }
         , _label{ get_last_dir( path ) }
+        , _read_mode{ rm }
         , _dir{ opendir( path.c_str() ) }
         , _stream{ nullptr }
         , _size{}
@@ -189,7 +190,19 @@ struct DirReader::Impl
 
         std::string file = _path + '/' + _stream->d_name;
 
-        face = cv::imread( file, CV_LOAD_IMAGE_UNCHANGED );
+
+        const auto flags = [this] ()
+        {
+            switch ( _read_mode )
+            {
+                case DirReader::ReadMode::_unchanged:
+                    return CV_LOAD_IMAGE_UNCHANGED;
+                case DirReader::ReadMode::_grayscale:
+                    return CV_LOAD_IMAGE_GRAYSCALE;
+            }
+            assert( false );
+        } ();
+        face = cv::imread( file, flags );
         if( ! face.data )
         {
             Exception e{ "Failed to read face file: " + file };
@@ -215,14 +228,15 @@ struct DirReader::Impl
 private:
     const std::string _path;
     const std::string _label;
+    const DirReader::ReadMode _read_mode;
     DIR * _dir;
     dirent * _stream;
     cv::Size _size;  // largest width and height
 };
 
 
-DirReader::DirReader( const std::string & path, bool calc_size )
-    : _impl{ std::make_unique<Impl>( path, calc_size ) }
+DirReader::DirReader( const std::string & path, bool calc_size, ReadMode rm )
+    : _impl{ std::make_unique<Impl>( path, calc_size, rm ) }
 {
 }
 
