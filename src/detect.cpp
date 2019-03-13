@@ -5,7 +5,7 @@
 // run-deps: haarcascade XMLs
 
 
-#include "iface.h"
+#include "algo.h"
 
 #include <queue>
 #include <iostream>
