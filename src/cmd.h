@@ -22,6 +22,12 @@ struct PrintHelp : Base
 };
 
 
+struct Test : Base
+{
+    void execute() override;
+};
+
+
 }  // namespace cmd
 
 

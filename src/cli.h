@@ -11,10 +11,9 @@ namespace cli
 {
 
 
-using Argc = int;
 using Argv = const char *const *const;
 
-std::unique_ptr<cmd::Base> parse( Argc argc, Argv argv );
+std::unique_ptr<cmd::Base> parse( int argc, Argv argv );
 
 
 }  // namespace cli

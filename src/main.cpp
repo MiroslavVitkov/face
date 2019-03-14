@@ -68,21 +68,21 @@ void vid_to_dir( const std::string & in = "vid.avi"
 }
 
 
-int main()
-{
-    cam_to_vid();
-    vid_to_vid();
-    dir_to_vid();
-    vid_to_dir();
-}
-
-
-//#include "cli.h"
-
-//int main( int argc, cli::Argv argv )
+//int main()
 //{
-//    const auto action = cli::parse( argc, argv );
-//    action->execute();
-
-//    return 0;
+//    cam_to_vid();
+//    vid_to_vid();
+//    dir_to_vid();
+//    vid_to_dir();
 //}
+
+
+#include "cli.h"
+
+int main( int argc, cli::Argv argv )
+{
+    const auto action = cli::parse( argc, argv );
+    action->execute();
+
+    return 0;
+}

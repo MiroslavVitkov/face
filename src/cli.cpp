@@ -1,5 +1,7 @@
 #include "cli.h"
 
+#include "../external_resources/optionparser.h"
+
 #include <algorithm>
 #include <iostream>
 #include <string>
@@ -10,6 +12,12 @@ namespace cli
 {
 
 
+std::unique_ptr<cmd::Base> parse( int argc, Argv argv )
+{
+    return std::make_unique<cmd::PrintHelp>();
+}
+
+/*
 std::unique_ptr<cmd::Base> parse( Argc argc, Argv argv )
 {
     // If '--help' is present, nothing else gets considered.
@@ -79,8 +87,8 @@ std::unique_ptr<cmd::Base> parse( Argc argc, Argv argv )
     const std::string region{ "region" };
     if( view.compare( without_options[0] ) )
     {
-        return std::unique_ptr<cmd::Base>{ new cmd::ViewOrSave{ without_options[1]
-                                                              , fname_out } };
+//        return std::unique_ptr<cmd::Base>{ new cmd::ViewOrSave{ without_options[1]
+//                                                              , fname_out } };
     }
     else if( region.compare( without_options[0] ) )
     {
@@ -94,5 +102,5 @@ std::unique_ptr<cmd::Base> parse( Argc argc, Argv argv )
     }
 }
 
-
+*/
 }  // namespace cli
