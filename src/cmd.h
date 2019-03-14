@@ -24,7 +24,25 @@ struct PrintHelp : Base
 
 struct Test : Base
 {
+    enum class Case
+    {
+        _cam_to_vid,
+        _vid_to_vid,
+        _dir_to_vid,
+        _vid_to_dir,
+    };
+
+    Test( Case
+        , unsigned frames
+        , const std::string & source_path
+        , const std::string & dest_path);
+
     void execute() override;
+
+    const Case _case;
+    const unsigned _frames;
+    const std::string _source_path;
+    const std::string _dest_path;
 };
 
 

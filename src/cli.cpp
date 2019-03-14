@@ -14,7 +14,10 @@ namespace cli
 
 std::unique_ptr<cmd::Base> parse( int argc, Argv argv )
 {
-    return std::make_unique<cmd::PrintHelp>();
+    return std::make_unique<cmd::Test>( cmd::Test::Case::_cam_to_vid
+                                      , 100
+                                      , "ignored"
+                                      , "cam" );
 }
 
 /*

@@ -3,21 +3,6 @@
 #include <iostream>
 
 
-void cam_to_vid( const std::string fname_out = "cam.avi" )
-{
-    Camera c;
-    VideoWriter vw{ fname_out, c.get_size() };
-    cv::Mat f;
-    for( unsigned i = 0; i < 100; ++i )
-    {
-        c >> f;
-        vw << f;
-    }
-
-    std::cout << "Wrote video file " << fname_out << " from default camera.\n";
-}
-
-
 void vid_to_vid( const std::string & fname_in = "cam.avi"
                , const std::string & fname_out = "vid.avi" )
 {
@@ -78,6 +63,7 @@ void vid_to_dir( const std::string & in = "vid.avi"
 
 
 #include "cli.h"
+
 
 int main( int argc, cli::Argv argv )
 {
