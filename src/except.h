@@ -4,7 +4,6 @@
 
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 
 struct Exception : public std::runtime_error
