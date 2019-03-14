@@ -43,6 +43,61 @@ void cam_to_vid( unsigned frames, std::string fname_out )
 }
 
 
+
+void vid_to_vid( unsigned frames
+               , const std::string & fname_in
+               , const std::string & fname_out )
+{
+    VideoReader vr( fname_in );
+    VideoWriter vw( fname_out, vr.get_size() );
+    cv::Mat f;
+
+    unsigned counter{};
+    while( vr >> f && ++counter <= frames )
+    {
+        vw << f;
+    }
+
+    std::cout << "Copied video " << fname_in
+              << " frame by frame to " << fname_out + '\n';
+}
+
+
+void dir_to_vid( const std::string & path = "./dataset" )
+{
+    auto cc = get_subdirs( path, true );
+    cv::Mat m;
+    std::cout << "Found the following subdirs:\n"
+                 "(writing one video file for each)\n";
+    for( auto & stream : cc )
+    {
+        VideoWriter vw{ stream.get_label() + ".avi", stream.get_size() };
+        std::cout << stream.get_label() << std::endl;
+
+        while( stream >> m )
+        {
+            vw << m;
+        }
+    }
+}
+
+
+void vid_to_dir( unsigned frames
+               , const std::string & in
+               , const std::string & out )
+{
+    cv::Mat m;
+    VideoReader v{ in };
+    DirWriter w{ out };
+
+    unsigned counter{};
+    while( v >> m && ++counter <= frames )
+    {
+        w << m;
+    }
+}
+
+
 Test::Test( Case c
           , unsigned frames
           , const std::string & source_path
@@ -64,19 +119,16 @@ void Test::execute()
             cam_to_vid( _frames, _dest_path );
             break;
         case Case::_vid_to_vid:
+            vid_to_vid( _frames, _source_path, _dest_path );
             break;
         case Case::_dir_to_vid:
+            dir_to_vid( _source_path );
             break;
         case Case::_vid_to_dir:
+            vid_to_dir( _frames, _source_path, _dest_path );
             break;
     }
 }
-
-
-
-
-
-
 
 
 }  // namespace cmd

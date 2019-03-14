@@ -35,7 +35,7 @@ struct Test : Base
     Test( Case
         , unsigned frames
         , const std::string & source_path
-        , const std::string & dest_path);
+        , const std::string & dest_path );
 
     void execute() override;
 
