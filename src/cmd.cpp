@@ -1,4 +1,6 @@
 #include "cmd.h"
+
+#include "algo.h"
 #include "io.h"
 
 #include <iostream>
@@ -114,16 +116,31 @@ void Test::execute()
 }
 
 
+void draw_rect( cv::Mat & frame, cv::Rect rect )
+{
+    cv::rectangle( frame, rect, cv::Scalar(0, 255, 0) );
+}
+
+
 void CamDetectShow::execute()
 {
     Camera cam;
-    VideoPlayer player{ "kur" };
+    VideoPlayer player{ "faces" };
     cv::Mat frame;
+
+    LBP detector{ "../res/haarcascades" };
 
     while( cam >> frame )
     {
+        const auto rects = detector.get_face_rects( frame );
+        for( const auto & r : rects )
+        {
+            draw_rect( frame, r );
+        }
+
         player << frame;
     }
 }
+
 
 }  // namespace cmd

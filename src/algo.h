@@ -32,6 +32,9 @@ struct LBP : public Detector
     cv::CascadeClassifier _classifier;
 
     LBP( const std::string & cascades_dir );
+    std::vector<cv::Rect> get_face_rects( const cv::Mat & frame
+                                        , double min_confidence = 0.8
+                                        );
     std::vector<cv::Mat> get_faces( const cv::Mat & frame
                                   , double min_confidence = 0.8
                                   ) override;

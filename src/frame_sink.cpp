@@ -15,7 +15,7 @@ VideoPlayer::VideoPlayer(const std::string & window_name )
 FrameSink & VideoPlayer::operator<<( const cv::Mat & frame )
 {
     cv::imshow( _window_name, frame );
-    cv::waitKey(30);
+    cv::waitKey( 30 );
 
     return *this;
 }

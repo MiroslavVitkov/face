@@ -34,9 +34,9 @@ LBP::LBP( const std::string & cascades_dir )
 }
 
 
-std::vector<cv::Mat> LBP::get_faces( const cv::Mat & frame
-                                   , double min_confidence
-                                   )
+std::vector<cv::Rect> LBP::get_face_rects( const cv::Mat & frame
+                                         , double min_confidence
+                                         )
 {
     assert( ! frame.empty() );
 
@@ -51,6 +51,16 @@ std::vector<cv::Mat> LBP::get_faces( const cv::Mat & frame
     _classifier.detectMultiScale( gray, rects );
     // Perhaps do low-pass filtering over 3 consecutive frames to evade false positives.
     (void)min_confidence;
+
+    return rects;
+}
+
+
+std::vector<cv::Mat> LBP::get_faces( const cv::Mat & frame
+                                   , double min_confidence
+                                   )
+{
+    const auto rects = get_face_rects( frame, min_confidence );
 
     // Crop faces out of the video frame.
     std::vector<cv::Mat> faces;
