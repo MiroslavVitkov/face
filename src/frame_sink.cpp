@@ -5,6 +5,22 @@
 #include <sys/stat.h>
 
 
+VideoPlayer::VideoPlayer(const std::string & window_name )
+    : _window_name{ window_name }
+{
+    cv::namedWindow( window_name, cv::WINDOW_AUTOSIZE );
+}
+
+
+FrameSink & VideoPlayer::operator<<( const cv::Mat & frame )
+{
+    cv::imshow( _window_name, frame );
+    cv::waitKey(30);
+
+    return *this;
+}
+
+
 VideoWriter::VideoWriter( const std::string path, cv::Size size, Fit fit_mode )
     : _video_stream{ path, cv:: VideoWriter::fourcc('M','J','P','G'), 30, size }
     , _size{ size }

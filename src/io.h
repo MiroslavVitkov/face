@@ -90,6 +90,16 @@ std::vector<DirReader> get_subdirs( const std::string dataset_path
                                   , bool calc_size = false );
 
 
+struct VideoPlayer : FrameSink
+{
+    VideoPlayer( const std::string & window_name );
+    FrameSink & operator<<( const cv::Mat & frame ) override;
+
+private:
+    const std::string _window_name;
+};
+
+
 struct VideoWriter : public FrameSink
 {
     // How to fit smaller frames to the video.

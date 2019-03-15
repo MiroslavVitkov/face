@@ -114,4 +114,16 @@ void Test::execute()
 }
 
 
+void CamDetectShow::execute()
+{
+    Camera cam;
+    VideoPlayer player{ "kur" };
+    cv::Mat frame;
+
+    while( cam >> frame )
+    {
+        player << frame;
+    }
+}
+
 }  // namespace cmd

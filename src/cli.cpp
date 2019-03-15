@@ -15,8 +15,8 @@ namespace cli
 std::unique_ptr<cmd::Base> parse( int argc, Argv argv )
 {
     const cv::String keys =
-        "{help h usage ? |      | print this message   }"
-        "{@image1        |      | image1 for compare   }"
+        "{help h usage ? |      | print this message        }"
+        "{test t         |      | diagnostics for debugging }"
         "{@image2        |<none>| image2 for compare   }"
         "{@repeat        |1     | number               }"
         "{path           |.     | path to file         }"
@@ -25,7 +25,7 @@ std::unique_ptr<cmd::Base> parse( int argc, Argv argv )
         "{ts timestamp   |      | use time stamp       }"
         ;
 
-    cv::CommandLineParser parser(argc, argv, keys);
+    cv::CommandLineParser parser( argc, argv, keys );
 
     if( parser.has( "help" ) )
     {
@@ -33,10 +33,15 @@ std::unique_ptr<cmd::Base> parse( int argc, Argv argv )
         return std::make_unique<cmd::NoOp>();
     }
 
-    return std::make_unique<cmd::Test>( cmd::Test::Case::_cam_to_vid
-                                      , 100
-                                      , "ignored"
-                                      , "cam" );
+    if( parser.has( "test" ) )
+    {
+        return std::make_unique<cmd::Test>( cmd::Test::Case::_cam_to_vid
+                                          , 100
+                                          , "ignored"
+                                          , "cam" );
+    }
+
+    return std::make_unique<cmd::CamDetectShow>();
 }
 
 /*

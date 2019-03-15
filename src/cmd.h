@@ -46,6 +46,12 @@ struct Test : Base
 };
 
 
+struct CamDetectShow : Base
+{
+    void execute() override;
+};
+
+
 }  // namespace cmd
 
 
