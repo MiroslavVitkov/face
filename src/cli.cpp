@@ -1,6 +1,6 @@
 #include "cli.h"
 
-#include "../external_resources/optionparser.h"
+#include <opencv2/opencv.hpp>
 
 #include <algorithm>
 #include <iostream>
