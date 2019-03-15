@@ -16,9 +16,9 @@ struct Base
 };
 
 
-struct PrintHelp : Base
+struct NoOp : Base
 {
-    void execute() override;
+    void execute() override {}
 };
 
 

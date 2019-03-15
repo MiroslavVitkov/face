@@ -14,6 +14,25 @@ namespace cli
 
 std::unique_ptr<cmd::Base> parse( int argc, Argv argv )
 {
+    const cv::String keys =
+        "{help h usage ? |      | print this message   }"
+        "{@image1        |      | image1 for compare   }"
+        "{@image2        |<none>| image2 for compare   }"
+        "{@repeat        |1     | number               }"
+        "{path           |.     | path to file         }"
+        "{fps            | -1.0 | fps for output video }"
+        "{N count        |100   | count of objects     }"
+        "{ts timestamp   |      | use time stamp       }"
+        ;
+
+    cv::CommandLineParser parser(argc, argv, keys);
+
+    if( parser.has( "help" ) )
+    {
+        parser.printMessage();
+        return std::make_unique<cmd::NoOp>();
+    }
+
     return std::make_unique<cmd::Test>( cmd::Test::Case::_cam_to_vid
                                       , 100
                                       , "ignored"
