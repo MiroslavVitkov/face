@@ -9,3 +9,48 @@ int main()
     return 0;
 }
 
+/*
+
+
+// While there are frames in 'cam', pass them through the pipeline.
+while( cam )
+{
+    cam >> grayscale >> equalize >> show;
+}
+
+
+using Frame = cv::Mat;
+
+
+struct FrameSource
+{
+    virtual Frame get() = 0;
+    operator bool() const = 0;
+};
+
+struct FrameSink
+{
+    virtual void set( const Frame & ) = 0;
+};
+
+struct Procssor : FrameSink, FrameSource
+{
+};
+
+FramSink & operator>>( FramSource & source, FramSink & sink )
+{
+    const auto frame = source.get();
+    sink.set( frame );
+    return sink;
+}
+
+
+FramSource & operator>>( FramSource & source, Processor & sink )
+{
+    const auto frame = source.get();
+    sink.set( frame );
+    return sink;
+}
+
+
+*/
