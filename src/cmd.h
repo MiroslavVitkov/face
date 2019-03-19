@@ -2,6 +2,7 @@
 #define CMD_H_
 
 
+#include <memory>
 #include <string>
 
 
@@ -50,6 +51,21 @@ struct Test : Base
 struct CamDetectShow : Base
 {
     void execute() override;
+};
+
+
+// Tell the model who the person on the carera is.
+struct CamTrain : Base
+{
+    CamTrain( int label
+            , const std::string & fname_model_in
+            , const std::string & fname_model_out );
+    void execute() override;
+    ~CamTrain();
+
+private:
+    struct Impl;
+    std::unique_ptr<Impl> _impl;
 };
 
 

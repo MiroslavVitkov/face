@@ -3,6 +3,9 @@
 #include "algo.h"
 #include "io.h"
 
+#include <opencv2/opencv.hpp>
+#include <opencv2/face.hpp>
+
 #include <iostream>
 
 
@@ -140,6 +143,79 @@ void CamDetectShow::execute()
 
         player << frame;
     }
+}
+
+
+struct CamTrain::Impl
+{
+    Impl( int label 
+        , const std::string & fname_model_in
+        , const std::string & fname_model_out )
+        : _label{ label }
+        , _recognizer{ cv::face::createLBPHFaceRecognizer() }
+        , _fname_model_out{ fname_model_out }
+    {
+        _recognizer->load( fname_model_in );
+    }
+
+
+    void update( const cv::Mat & face )
+    {
+        _recognizer->update( face, _label );
+    }
+
+
+    ~Impl()
+    {
+        _recognizer->save( _fname_model_out );
+    }
+
+
+private:
+    int _label;
+    cv::Ptr< cv::face::FaceRecognizer > _recognizer;
+    const std::string & _fname_model_out;
+};
+
+
+CamTrain::CamTrain( int label
+                  , const std::string & fname_model_in
+                  , const std::string & fname_model_out )
+    : _impl{std::make_unique<Impl>( label, fname_model_in, fname_model_out ) }
+{
+}
+
+
+void CamTrain::execute()
+{
+    Camera cam;
+    cv::Mat frame;
+
+    LBPDetector detector{ "../res/haarcascades" };
+
+    while( cam >> frame )
+    {
+        const auto faces = detector.get_faces( frame );
+        if( faces.empty() )
+        {
+            continue;
+        }
+        else if( faces.size() > 1 )
+        {
+            std::cout << "Too many faces detected in frame: "
+                       + std::to_string( faces.size() );
+            continue;
+        }
+        else
+        {
+            _impl->update( faces.front() );
+        }
+    }
+}
+
+
+CamTrain::~CamTrain()
+{
 }
 
 
