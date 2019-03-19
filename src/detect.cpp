@@ -26,15 +26,15 @@ cv::CascadeClassifier create_classifier( const std::string & cascades_dir
 }
 
 
-LBP::LBP( const std::string & cascades_dir )
-:_classifier{ create_classifier( cascades_dir, "haarcascade_frontalface_alt" ) }
+LBPDetector::LBPDetector( const std::string & cascades_dir )
+    :_classifier{ create_classifier( cascades_dir, "haarcascade_frontalface_alt" ) }
 {
     // todo: consider turning '_classifier' into a verctor
     // and adding at least 'haarcascade_eye_tree_eyeglasses'.
 }
 
 
-std::vector<cv::Rect> LBP::get_face_rects( const cv::Mat & frame
+std::vector<cv::Rect> LBPDetector::get_face_rects( const cv::Mat & frame
                                          , double min_confidence
                                          )
 {
@@ -56,7 +56,7 @@ std::vector<cv::Rect> LBP::get_face_rects( const cv::Mat & frame
 }
 
 
-std::vector<cv::Mat> LBP::get_faces( const cv::Mat & frame
+std::vector<cv::Mat> LBPDetector::get_faces( const cv::Mat & frame
                                    , double min_confidence
                                    )
 {

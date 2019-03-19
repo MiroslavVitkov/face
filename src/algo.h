@@ -27,11 +27,9 @@ struct Recogniser
 
 // Detect faces usng Local Bnary Patterns.
 // https://docs.opencv.org/3.2.0/d1/de5/classcv_1_1CascadeClassifier.html
-struct LBP : public Detector
+struct LBPDetector : public Detector
 {
-    cv::CascadeClassifier _classifier;
-
-    LBP( const std::string & cascades_dir );
+    LBPDetector( const std::string & cascades_dir );
     std::vector<cv::Rect> get_face_rects( const cv::Mat & frame
                                         , double min_confidence = 0.8
                                         );

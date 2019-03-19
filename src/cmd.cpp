@@ -128,7 +128,7 @@ void CamDetectShow::execute()
     VideoPlayer player{ "faces" };
     cv::Mat frame;
 
-    LBP detector{ "../res/haarcascades" };
+    LBPDetector detector{ "../res/haarcascades" };
 
     while( cam >> frame )
     {

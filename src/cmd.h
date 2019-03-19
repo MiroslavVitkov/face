@@ -46,6 +46,7 @@ struct Test : Base
 };
 
 
+// camera -> detect faces -> play video
 struct CamDetectShow : Base
 {
     void execute() override;
