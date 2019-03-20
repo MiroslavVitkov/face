@@ -61,7 +61,7 @@ struct CamTrain : Base
             , const std::string & fname_model_in
             , const std::string & fname_model_out );
     void execute() override;
-    ~CamTrain();
+    ~CamTrain() override;
 
 private:
     struct Impl;

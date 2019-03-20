@@ -155,13 +155,57 @@ struct CamTrain::Impl
         , _recognizer{ cv::face::createLBPHFaceRecognizer() }
         , _fname_model_out{ fname_model_out }
     {
-        _recognizer->load( fname_model_in );
+        try
+        {
+            _recognizer->load( fname_model_in );
+        }
+        catch( const cv::Exception & )
+        {
+            // Apparently an empty model.
+            // No need to load anything.
+        }
     }
 
 
     void update( const cv::Mat & face )
     {
-        _recognizer->update( face, _label );
+        cv::Mat gray;
+        cv::cvtColor( face, gray, CV_BGR2GRAY );
+        std::vector<cv::Mat> faces{ gray };
+        std::vector<int> labels{ _label };
+        assert( faces.size() == labels.size() );
+        _recognizer->update( faces, labels );
+    }
+
+
+    void execute()
+    {
+        Camera cam;
+        cv::Mat frame;
+
+        LBPDetector detector{ "../res/haarcascades" };
+
+        while( cam >> frame )
+        {
+            const auto faces = detector.get_faces( frame );
+            if( faces.empty() )
+            {
+                continue;
+            }
+            else if( faces.size() > 1 )
+            {
+                std::cout << "Too many faces detected in frame: "
+                           + std::to_string( faces.size() );
+                continue;
+            }
+            else
+            {
+                update( faces.front() );
+            }
+
+            std::cout << "KOPELE FAILA E :" << _fname_model_out;
+            _recognizer->save( _fname_model_out );
+        }
     }
 
 
@@ -174,7 +218,7 @@ struct CamTrain::Impl
 private:
     int _label;
     cv::Ptr< cv::face::FaceRecognizer > _recognizer;
-    const std::string & _fname_model_out;
+    const std::string _fname_model_out;
 };
 
 
@@ -188,29 +232,7 @@ CamTrain::CamTrain( int label
 
 void CamTrain::execute()
 {
-    Camera cam;
-    cv::Mat frame;
-
-    LBPDetector detector{ "../res/haarcascades" };
-
-    while( cam >> frame )
-    {
-        const auto faces = detector.get_faces( frame );
-        if( faces.empty() )
-        {
-            continue;
-        }
-        else if( faces.size() > 1 )
-        {
-            std::cout << "Too many faces detected in frame: "
-                       + std::to_string( faces.size() );
-            continue;
-        }
-        else
-        {
-            _impl->update( faces.front() );
-        }
-    }
+    _impl->execute();
 }
 
 
