@@ -13,6 +13,12 @@
 
 struct FrameSource
 {
+    enum class ReadMode
+    {
+        _grayscale,
+        _colour,
+    };
+
     virtual FrameSource & operator>>( cv::Mat & frame ) = 0;
     virtual operator bool() const = 0;  // true if last operation was successful
     virtual cv::Size get_size() const = 0;
@@ -35,13 +41,14 @@ struct Camera : public FrameSource
         _first_usb_camera = 0
     };
 
-    Camera( Id = Id::_first_usb_camera );
+    Camera( ReadMode = ReadMode::_colour, Id = Id::_first_usb_camera );
     operator bool() const override { return true; }
     cv::Size get_size() const override;
     Camera & operator>>( cv::Mat & frame ) override;
 
 private:
     cv::VideoCapture _video_stream;
+    const ReadMode _mode;
 };
 
 
@@ -63,15 +70,9 @@ private:
 // Each subdirectory contains cropped faces of that one subject.
 struct DirReader : public FrameSource
 {
-    enum class ReadMode
-    {
-        _unchanged,
-        _grayscale,
-    };
-
     DirReader( const std::string & path
              , bool calc_size = false
-             , ReadMode rm = ReadMode::_unchanged );
+             , ReadMode rm = ReadMode::_colour );
     DirReader( DirReader && );
     ~DirReader() override;
 

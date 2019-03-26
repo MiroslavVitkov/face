@@ -5,8 +5,9 @@
 #include <regex>
 
 
-Camera::Camera( Camera::Id id )
+Camera::Camera( ReadMode mode, Camera::Id id )
     : _video_stream{ static_cast< int >( id ) }
+    , _mode{ mode }
 {
     if( ! _video_stream.isOpened() )
     {
@@ -37,7 +38,18 @@ cv::Size Camera::get_size() const
 
 Camera & Camera::operator>>( cv::Mat & frame )
 {
-    _video_stream >> frame;
+    switch ( _mode )
+    {
+        case ReadMode::_colour:
+            _video_stream >> frame;
+            break;
+        case ReadMode::_grayscale:
+            cv::Mat tmp;
+            _video_stream >> tmp;
+            cv::cvtColor( tmp, frame, CV_BGR2GRAY );
+            break;
+    }
+
     return *this;
 }
 
@@ -138,6 +150,8 @@ cv::Size calc_largest_size( const std::string & path )
 
 struct DirReader::Impl
 {
+    using ReadMode = Camera::ReadMode;
+
     Impl( const std::string & path, bool calc_size, ReadMode rm )
         : _path{ path }
         , _label{ get_last_dir( path ) }
@@ -195,10 +209,10 @@ struct DirReader::Impl
         {
             switch ( _read_mode )
             {
-                case DirReader::ReadMode::_unchanged:
-                    return CV_LOAD_IMAGE_UNCHANGED;
-                case DirReader::ReadMode::_grayscale:
+                case ReadMode::_grayscale:
                     return CV_LOAD_IMAGE_GRAYSCALE;
+                case ReadMode::_colour:
+                    return CV_LOAD_IMAGE_UNCHANGED;
             }
             assert( false );
         } ();
@@ -228,7 +242,7 @@ struct DirReader::Impl
 private:
     const std::string _path;
     const std::string _label;
-    const DirReader::ReadMode _read_mode;
+    const ReadMode _read_mode;
     DIR * _dir;
     dirent * _stream;
     cv::Size _size;  // largest width and height

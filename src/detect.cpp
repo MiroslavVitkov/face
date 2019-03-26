@@ -26,7 +26,7 @@ cv::CascadeClassifier create_classifier( const std::string & cascades_dir
 }
 
 
-LBPDetector::LBPDetector( const std::string & cascades_dir )
+DetectorLBP::DetectorLBP( const std::string & cascades_dir )
     :_classifier{ create_classifier( cascades_dir, "haarcascade_frontalface_alt" ) }
 {
     // todo: consider turning '_classifier' into a verctor
@@ -34,15 +34,15 @@ LBPDetector::LBPDetector( const std::string & cascades_dir )
 }
 
 
-std::vector<cv::Rect> LBPDetector::get_face_rects( const cv::Mat & frame
-                                         , double min_confidence
-                                         )
+std::vector<cv::Rect> DetectorLBP::get_face_rects( const cv::Mat & frame
+                                                 , double min_confidence
+                                                 )
 {
     assert( ! frame.empty() );
 
     // Convert to 8-bit single channel image.
-    cv::Mat gray;
-    cv::cvtColor( frame, gray, CV_BGR2GRAY );
+    cv::Mat gray = frame;
+//    cv::cvtColor( frame, gray, CV_BGR2GRAY );
 
     // Increase contrast in under- or over-exposed areas of the image.
     cv::equalizeHist( gray, gray );
@@ -52,13 +52,15 @@ std::vector<cv::Rect> LBPDetector::get_face_rects( const cv::Mat & frame
     // Perhaps do low-pass filtering over 3 consecutive frames to evade false positives.
     (void)min_confidence;
 
+    std::cout << "num detected faces: " << std::to_string( rects.size() ) << std::endl;
+
     return rects;
 }
 
 
-std::vector<cv::Mat> LBPDetector::get_faces( const cv::Mat & frame
-                                   , double min_confidence
-                                   )
+std::vector<cv::Mat> DetectorLBP::get_faces( const cv::Mat & frame
+                                           , double min_confidence
+                                           )
 {
     const auto rects = get_face_rects( frame, min_confidence );
 

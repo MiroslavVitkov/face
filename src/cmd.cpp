@@ -131,7 +131,7 @@ void CamDetectShow::execute()
     VideoPlayer player{ "faces" };
     cv::Mat frame;
 
-    LBPDetector detector{ "../res/haarcascades" };
+    DetectorLBP detector{ "../res/haarcascades" };
 
     while( cam >> frame )
     {
@@ -155,14 +155,9 @@ struct CamTrain::Impl
         , _recognizer{ cv::face::createLBPHFaceRecognizer() }
         , _fname_model_out{ fname_model_out }
     {
-        try
+        if( ! fname_model_in.empty() )
         {
             _recognizer->load( fname_model_in );
-        }
-        catch( const cv::Exception & )
-        {
-            // Apparently an empty model.
-            // No need to load anything.
         }
     }
 
@@ -171,9 +166,11 @@ struct CamTrain::Impl
     {
         cv::Mat gray;
         cv::cvtColor( face, gray, CV_BGR2GRAY );
+
         std::vector<cv::Mat> faces{ gray };
         std::vector<int> labels{ _label };
         assert( faces.size() == labels.size() );
+
         _recognizer->update( faces, labels );
     }
 
@@ -183,7 +180,7 @@ struct CamTrain::Impl
         Camera cam;
         cv::Mat frame;
 
-        LBPDetector detector{ "../res/haarcascades" };
+        DetectorLBP detector{ "../res/haarcascades" };
 
         while( cam >> frame )
         {
@@ -240,5 +237,60 @@ CamTrain::~CamTrain()
 {
 }
 
+
+struct CamRecognise::Impl
+{
+    Impl( const std::string & fname_model )
+        : _recognizer{ cv::face::createLBPHFaceRecognizer() }
+    {
+        _recognizer->load( fname_model );
+    }
+
+
+    void run()
+    {
+        Camera cam{ Camera::ReadMode::_grayscale };
+        DetectorLBP detector{ "../res/haarcascades" };
+        VideoPlayer player{ "debug view" };
+        cv::Mat frame;
+
+        while( cam >> frame )
+        {
+            const auto rects = detector.get_face_rects( frame );
+            for( const auto & r : rects )
+            {
+                draw_rect( frame, r );
+            }
+            player << frame;
+
+            const auto faces = detector.get_faces( frame );
+            for( const auto & f : faces )
+            {
+                const auto label = _recognizer->predict( f );
+                std::cout << "FACE number " << std::to_string( label ) << " detected.\n";
+            }
+        }
+    }
+
+
+    cv::Ptr< cv::face::FaceRecognizer > _recognizer;
+};
+
+
+CamRecognise::CamRecognise( const std::string & fname_model )
+    : _impl{ std::make_unique<Impl>( fname_model ) }
+{
+}
+
+
+void CamRecognise::execute()
+{
+    _impl->run();
+}
+
+
+CamRecognise::~CamRecognise()
+{
+}
 
 }  // namespace cmd

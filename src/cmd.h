@@ -58,10 +58,24 @@ struct CamDetectShow : Base
 struct CamTrain : Base
 {
     CamTrain( int label
-            , const std::string & fname_model_in
-            , const std::string & fname_model_out );
+            , const std::string & fname_model_in = ""
+            , const std::string & fname_model_out = "model" );
     void execute() override;
     ~CamTrain() override;
+
+private:
+    struct Impl;
+    std::unique_ptr<Impl> _impl;
+};
+
+
+struct CamRecognise : Base
+{
+    using Label = int;
+
+    CamRecognise( const std::string & fname_model = "model" );
+    void execute() override;
+    ~CamRecognise() override;
 
 private:
     struct Impl;
