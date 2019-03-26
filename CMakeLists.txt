@@ -7,5 +7,5 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_compile_options( -Wall -Wextra -pedantic -Werror -Wfatal-errors )
 find_package( OpenCV REQUIRED )
 
-add_executable( face src/main.cpp src/cli.cpp src/cmd.cpp src/frame_source.cpp src/frame_sink.cpp src/detect.cpp )
+add_executable( face src/cli.cpp src/cmd.cpp src/io.cpp src/main.cpp src/detect.cpp )
 target_link_libraries( face ${OpenCV_LIBS} )

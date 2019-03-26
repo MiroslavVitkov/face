@@ -17,8 +17,8 @@ void cam_to_vid( unsigned frames, std::string fname_out )
 {
     fname_out += ".avi";
 
-    Camera c;
-    VideoWriter vw{ fname_out, c.get_size() };
+    io::Camera c;
+    io::VideoWriter vw{ fname_out, c.get_size() };
     cv::Mat f;
 
     for( unsigned i = 0; i < frames; ++i )
@@ -36,8 +36,8 @@ void vid_to_vid( unsigned frames
                , const std::string & fname_in
                , const std::string & fname_out )
 {
-    VideoReader vr( fname_in );
-    VideoWriter vw( fname_out, vr.get_size() );
+    io::VideoReader vr( fname_in );
+    io::VideoWriter vw( fname_out, vr.get_size() );
     cv::Mat f;
 
     unsigned counter{};
@@ -53,13 +53,13 @@ void vid_to_vid( unsigned frames
 
 void dir_to_vid( const std::string & path = "./dataset" )
 {
-    auto cc = get_subdirs( path, true );
+    auto cc = io::get_subdirs( path, io::Mode::_grayscale, true );
     cv::Mat m;
     std::cout << "Found the following subdirs:\n"
                  "(writing one video file for each)\n";
     for( auto & stream : cc )
     {
-        VideoWriter vw{ stream.get_label() + ".avi", stream.get_size() };
+        io::VideoWriter vw{ stream.get_label() + ".avi", stream.get_size() };
         std::cout << stream.get_label() << std::endl;
 
         while( stream >> m )
@@ -75,8 +75,8 @@ void vid_to_dir( unsigned frames
                , const std::string & out )
 {
     cv::Mat m;
-    VideoReader v{ in };
-    DirWriter w{ out };
+    io::VideoReader v{ in };
+    io::DirWriter w{ out };
 
     unsigned counter{};
     while( v >> m && ++counter <= frames )
@@ -127,8 +127,8 @@ void draw_rect( cv::Mat & frame, cv::Rect rect )
 
 void CamDetectShow::execute()
 {
-    Camera cam;
-    VideoPlayer player{ "faces" };
+    io::Camera cam;
+    io::VideoPlayer player{ "faces" };
     cv::Mat frame;
 
     DetectorLBP detector{ "../res/haarcascades" };
@@ -174,8 +174,8 @@ struct CamTrain::Impl
 
     void execute()
     {
-        Camera cam{ Camera::ReadMode::_grayscale };
-        VideoPlayer vid{ "training in progress..." };
+        io::Camera cam{ io::Mode::_grayscale };
+        io::VideoPlayer vid{ "training in progress..." };
         cv::Mat frame;
 
         DetectorLBP detector{ "../res/haarcascades" };
@@ -252,9 +252,9 @@ struct CamRecognise::Impl
 
     void run()
     {
-        Camera cam{ Camera::ReadMode::_grayscale };
+        io::Camera cam{ io::Mode::_grayscale };
         DetectorLBP detector{ "../res/haarcascades" };
-        VideoPlayer player{ "debug view" };
+        io::VideoPlayer player{ "debug view" };
         cv::Mat frame;
 
         while( cam >> frame )

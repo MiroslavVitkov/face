@@ -11,14 +11,19 @@
 #include <vector>
 
 
+namespace io
+{
+
+
+enum class Mode
+{
+    _colour,
+    _grayscale,
+};
+
+
 struct FrameSource
 {
-    enum class ReadMode
-    {
-        _grayscale,
-        _colour,
-    };
-
     virtual FrameSource & operator>>( cv::Mat & frame ) = 0;
     virtual operator bool() const = 0;  // true if last operation was successful
     virtual cv::Size get_size() const = 0;
@@ -41,14 +46,14 @@ struct Camera : public FrameSource
         _first_usb_camera = 0
     };
 
-    Camera( ReadMode = ReadMode::_colour, Id = Id::_first_usb_camera );
+    Camera( Mode = Mode::_colour, Id = Id::_first_usb_camera );
     operator bool() const override { return true; }
     cv::Size get_size() const override;
     Camera & operator>>( cv::Mat & frame ) override;
 
 private:
     cv::VideoCapture _video_stream;
-    const ReadMode _mode;
+    const Mode _mode;
 };
 
 
@@ -71,15 +76,15 @@ private:
 struct DirReader : public FrameSource
 {
     DirReader( const std::string & path
-             , bool calc_size = false
-             , ReadMode rm = ReadMode::_colour );
+             , Mode mode = Mode::_colour
+             , bool calc_size = false );
     DirReader( DirReader && );
     ~DirReader() override;
 
     operator bool() const override;
     DirReader & operator>>( cv::Mat & face ) override;
     cv::Size get_size() const override;
-    std::string get_label() const;
+    const std::string & get_label() const;
 
 private:
     struct Impl;
@@ -87,14 +92,15 @@ private:
 };
 
 
-std::vector<DirReader> get_subdirs( const std::string dataset_path
+std::vector<DirReader> get_subdirs( const std::string & dataset_path
+                                  , Mode mode = Mode::_colour
                                   , bool calc_size = false );
 
 
 struct VideoPlayer : FrameSink
 {
-    VideoPlayer( const std::string & window_name );
-    FrameSink & operator<<( const cv::Mat & frame ) override;
+    VideoPlayer( const std::string & window_name = "" );
+    VideoPlayer & operator<<( const cv::Mat & frame ) override;
 
 private:
     const std::string _window_name;
@@ -106,7 +112,7 @@ struct VideoWriter : public FrameSink
     // How to fit smaller frames to the video.
     enum class Fit{ _border };
 
-    VideoWriter( const std::string path
+    VideoWriter( const std::string & path
                , cv::Size
                , Fit fit_mode = Fit::_border );
     VideoWriter & operator<<( const cv::Mat & frame ) override;
@@ -127,6 +133,9 @@ private:
     const std::string _path;
     long unsigned _frame_num;
 };
+
+
+}  // namespace io
 
 
 #endif // defined(IO_H_)
