@@ -41,7 +41,7 @@ std::unique_ptr<cmd::Base> parse( int argc, Argv argv )
                                           , "cam" );
     }
 
-    //return std::make_unique<cmd::CamTrain>( 1, "model", "model" );
+    //return std::make_unique<cmd::CamTrain>( 1, "", "model" );
     return std::make_unique<cmd::CamRecognise>();
 }
 

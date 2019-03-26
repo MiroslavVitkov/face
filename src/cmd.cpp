@@ -164,10 +164,7 @@ struct CamTrain::Impl
 
     void update( const cv::Mat & face )
     {
-        cv::Mat gray;
-        cv::cvtColor( face, gray, CV_BGR2GRAY );
-
-        std::vector<cv::Mat> faces{ gray };
+        std::vector<cv::Mat> faces{ face };
         std::vector<int> labels{ _label };
         assert( faces.size() == labels.size() );
 
@@ -177,31 +174,37 @@ struct CamTrain::Impl
 
     void execute()
     {
-        Camera cam;
+        Camera cam{ Camera::ReadMode::_grayscale };
+        VideoPlayer vid{ "training in progress..." };
         cv::Mat frame;
 
         DetectorLBP detector{ "../res/haarcascades" };
 
         while( cam >> frame )
         {
+            const auto rects = detector.get_face_rects( frame );
+            for( const auto & r : rects )
+            {
+                draw_rect( frame, r );
+            }
+            vid << frame;
+
             const auto faces = detector.get_faces( frame );
             if( faces.empty() )
             {
-                continue;
             }
             else if( faces.size() > 1 )
             {
                 std::cout << "Too many faces detected in frame: "
-                           + std::to_string( faces.size() );
-                continue;
+                           + std::to_string( faces.size() ) << std::endl;
             }
             else
             {
                 update( faces.front() );
+                std::cout << "Wrote model to file: " << _fname_model_out
+                          << std::endl;
+                _recognizer->save( _fname_model_out );
             }
-
-            std::cout << "KOPELE FAILA E :" << _fname_model_out;
-            _recognizer->save( _fname_model_out );
         }
     }
 
@@ -266,8 +269,13 @@ struct CamRecognise::Impl
             const auto faces = detector.get_faces( frame );
             for( const auto & f : faces )
             {
-                const auto label = _recognizer->predict( f );
-                std::cout << "FACE number " << std::to_string( label ) << " detected.\n";
+                double confidence;
+                int label;
+                _recognizer->predict( f, label, confidence );
+                std::cout << "DETECTED"
+                          << " face number: " << std::to_string( label )
+                          << ", confidence: " << std::to_string( confidence )
+                          << std::endl;
             }
         }
     }

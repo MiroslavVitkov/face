@@ -52,8 +52,6 @@ std::vector<cv::Rect> DetectorLBP::get_face_rects( const cv::Mat & frame
     // Perhaps do low-pass filtering over 3 consecutive frames to evade false positives.
     (void)min_confidence;
 
-    std::cout << "num detected faces: " << std::to_string( rects.size() ) << std::endl;
-
     return rects;
 }
 

@@ -50,6 +50,8 @@ Camera & Camera::operator>>( cv::Mat & frame )
             break;
     }
 
+    cv::equalizeHist( frame, frame );
+
     return *this;
 }
 
