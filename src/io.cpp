@@ -328,6 +328,35 @@ std::vector<DirReader> get_subdirs( const std::string & dataset_path
 }
 
 
+void draw_rects( cv::Mat & frame, const std::vector<cv::Rect> & rects )
+{
+    for( const auto & r : rects )
+    {
+        cv::rectangle( frame, r, cv::Scalar(0, 255, 0) );
+    }
+}
+
+
+cv::Mat crop( const cv::Mat & frame, const cv::Rect & rect )
+{
+    return frame( rect );
+}
+
+
+std::vector<cv::Mat> crop( const cv::Mat & frame
+                         , const std::vector<cv::Rect> & rects )
+{
+    std::vector<cv::Mat> ret;
+    for( const auto & r : rects )
+    {
+        const auto cropped = frame( r );
+        ret.emplace_back( cropped );
+    }
+
+    return ret;
+}
+
+
 VideoPlayer::VideoPlayer(const std::string & window_name )
     : _window_name{ window_name }
 {

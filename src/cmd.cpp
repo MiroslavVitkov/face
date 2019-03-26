@@ -119,12 +119,6 @@ void Test::execute()
 }
 
 
-void draw_rect( cv::Mat & frame, cv::Rect rect )
-{
-    cv::rectangle( frame, rect, cv::Scalar(0, 255, 0) );
-}
-
-
 void CamDetectShow::execute()
 {
     io::Camera cam;
@@ -136,11 +130,7 @@ void CamDetectShow::execute()
     while( cam >> frame )
     {
         const auto rects = detector.get_face_rects( frame );
-        for( const auto & r : rects )
-        {
-            draw_rect( frame, r );
-        }
-
+        io::draw_rects( frame, rects );
         player << frame;
     }
 }
@@ -151,10 +141,13 @@ struct CamTrain::Impl
     Impl( int label 
         , const std::string & fname_model_in
         , const std::string & fname_model_out )
-        : _label{ label }
-        , _recognizer{ cv::face::createLBPHFaceRecognizer() }
+        : _recognizer{ cv::face::createLBPHFaceRecognizer() }
         , _fname_model_out{ fname_model_out }
+        , _tmp_labels{ label }
+        , _tmp_faces{}
     {
+        _tmp_faces.reserve( 1 );
+
         if( ! fname_model_in.empty() )
         {
             _recognizer->load( fname_model_in );
@@ -164,11 +157,10 @@ struct CamTrain::Impl
 
     void update( const cv::Mat & face )
     {
-        std::vector<cv::Mat> faces{ face };
-        std::vector<int> labels{ _label };
-        assert( faces.size() == labels.size() );
+        _tmp_faces[0] = face;
+        assert( _tmp_faces.size() == _tmp_labels.size() );
 
-        _recognizer->update( faces, labels );
+        _recognizer->update( _tmp_faces, _tmp_labels );
     }
 
 
@@ -176,49 +168,32 @@ struct CamTrain::Impl
     {
         io::Camera cam{ io::Mode::_grayscale };
         io::VideoPlayer vid{ "training in progress..." };
-        cv::Mat frame;
-
         DetectorLBP detector{ "../res/haarcascades" };
+        cv::Mat frame;
 
         while( cam >> frame )
         {
             const auto rects = detector.get_face_rects( frame );
-            for( const auto & r : rects )
-            {
-                draw_rect( frame, r );
-            }
+            io::draw_rects( frame, rects );
             vid << frame;
 
-            const auto faces = detector.get_faces( frame );
-            if( faces.empty() )
+            if( rects.size() == 1 )
             {
-            }
-            else if( faces.size() > 1 )
-            {
-                std::cout << "Too many faces detected in frame: "
-                           + std::to_string( faces.size() ) << std::endl;
-            }
-            else
-            {
-                update( faces.front() );
+                const auto face = io::crop( frame, rects[0] );
+                update( face );
+                _recognizer->save( _fname_model_out );
                 std::cout << "Wrote model to file: " << _fname_model_out
                           << std::endl;
-                _recognizer->save( _fname_model_out );
             }
         }
     }
 
 
-    ~Impl()
-    {
-        _recognizer->save( _fname_model_out );
-    }
-
-
 private:
-    int _label;
     cv::Ptr< cv::face::FaceRecognizer > _recognizer;
     const std::string _fname_model_out;
+    const std::vector<int> _tmp_labels;
+    std::vector<cv::Mat> _tmp_faces;
 };
 
 
@@ -254,24 +229,21 @@ struct CamRecognise::Impl
     {
         io::Camera cam{ io::Mode::_grayscale };
         DetectorLBP detector{ "../res/haarcascades" };
-        io::VideoPlayer player{ "debug view" };
+        io::VideoPlayer vid{ "recognising in progress..." };
         cv::Mat frame;
 
         while( cam >> frame )
         {
             const auto rects = detector.get_face_rects( frame );
-            for( const auto & r : rects )
-            {
-                draw_rect( frame, r );
-            }
-            player << frame;
+            io::draw_rects( frame, rects );
+            vid << frame;
 
-            const auto faces = detector.get_faces( frame );
-            for( const auto & f : faces )
+            for( const auto & r : rects )
             {
                 double confidence;
                 int label;
-                _recognizer->predict( f, label, confidence );
+                const auto face = io::crop( frame, r );
+                _recognizer->predict( face, label, confidence );
                 std::cout << "DETECTED"
                           << " face number: " << std::to_string( label )
                           << ", confidence: " << std::to_string( confidence )

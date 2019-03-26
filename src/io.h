@@ -96,6 +96,12 @@ std::vector<DirReader> get_subdirs( const std::string & dataset_path
                                   , Mode mode = Mode::_colour
                                   , bool calc_size = false );
 
+void draw_rects( cv::Mat & frame, const std::vector<cv::Rect> & rects );
+
+cv::Mat crop( const cv::Mat & frame, const cv::Rect & rect );
+std::vector<cv::Mat> crop( const cv::Mat & frame
+                         , const std::vector<cv::Rect> & rects );
+
 
 struct VideoPlayer : FrameSink
 {
