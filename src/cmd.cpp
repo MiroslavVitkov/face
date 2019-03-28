@@ -137,8 +137,7 @@ void CamDetectShow::execute()
 
 
 CamTrain::CamTrain( const std::string & label,  const std::string & fname_model )
-    : _label{ label }
-    , _model{ fname_model }
+    : _model{ label, fname_model }
 {
 }
 
@@ -161,7 +160,7 @@ void CamTrain::execute()
         if( rects.size() == 1 )
         {
             const auto face = io::crop( frame, rects[0] );
-            _model.update( 0, face );  // !!!!!!!!!!!!!!!!!!!!!!
+            _model.update( face );
             _model.save();
         }
     }
@@ -198,9 +197,9 @@ struct CamRecognise::Impl
                 int label;
                 const auto face = io::crop( frame, r );
                 _recogniser->predict( face, label, confidence );
-                std::cout << "DETECTED"
-                          << " face number: " << std::to_string( label )
-                          << ", confidence: " << std::to_string( confidence )
+                std::cout << "DETECTED "
+                          << _recogniser->getLabelInfo( label )
+                          << " with confidence: " << std::to_string( confidence )
                           << std::endl;
             }
         }

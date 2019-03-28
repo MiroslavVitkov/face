@@ -51,8 +51,8 @@ private:
 // Tran a Local Bnary Patterns model.
 struct TrainerLBP
 {
-    TrainerLBP( const std::string & fname_model );
-    void update( int label, const cv::Mat & gray_face );
+    TrainerLBP( const std::string & label, const std::string & fname_model );
+    void update( const cv::Mat & gray_face );
     void save() const;
 
 private:

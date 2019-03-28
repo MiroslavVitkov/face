@@ -16,7 +16,7 @@ std::unique_ptr<cmd::Base> parse( int argc, Argv argv )
 {
     const std::string keys =
         "{help h usage ? |      | print this message}"
-        "{train t        |      | train from camera; subject's name must be provided}"
+        "{train t        |      | train from camera; -t=subject_name}"
         "{recognise r    |      | recognise from camera}"
         ;
 

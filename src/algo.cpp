@@ -74,15 +74,40 @@ std::vector<cv::Mat> DetectorLBP::get_faces( const cv::Mat & frame
 }
 
 
-TrainerLBP::TrainerLBP( const std::string & fname_model )
+int label_to_number( const std::string & label
+                   , const cv::Ptr<cv::face::FaceRecognizer> model )
+{
+    // Look for existing entry.
+    const auto nums = model->getLabelsByString( label );
+    if( nums.size() == 1 )
+    {
+        return nums[0];
+    }
+    else if( nums.size() > 1 )
+    {
+        throw Exception{ "One to one relationship between string and numeric "
+                         "labels violated." };
+    }
+
+    // Find the next unoccupied entry.
+    for( int i = 0; ; ++i )
+    {
+        const auto str = model->getLabelInfo( i );
+        if( str.empty() )
+        {
+            return i;
+        }
+    }
+}
+
+
+TrainerLBP::TrainerLBP( const std::string & label
+                      , const std::string & fname_model )
     : _model{ cv::face::createLBPHFaceRecognizer() }
     , _fname_model{ fname_model }
     , _tmp_labels{}
     , _tmp_faces{}
 {
-    _tmp_labels.push_back( 0 );
-    _tmp_faces.emplace_back( cv::Mat{} );
-
     try
     {
         _model->load( fname_model );
@@ -91,11 +116,16 @@ TrainerLBP::TrainerLBP( const std::string & fname_model )
     {
         // File doesn't exist - load nothing.
     }
+
+    const auto l = label_to_number( label, _model );
+    _model->setLabelInfo( l, label );
+
+    _tmp_labels.push_back( l );
+    _tmp_faces.emplace_back( cv::Mat{} );
 }
 
-void TrainerLBP::update( int label, const cv::Mat & gray_face )
+void TrainerLBP::update( const cv::Mat & gray_face )
 {
-    _tmp_labels[0] = label;
     _tmp_faces[0] = gray_face;
     _model->update( _tmp_faces, _tmp_labels );
 }

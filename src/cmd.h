@@ -64,7 +64,6 @@ struct CamTrain : Base
     void execute() override;
 
 private:
-    const std::string _label;
     algo::TrainerLBP _model;
 };
 
