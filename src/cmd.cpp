@@ -125,7 +125,7 @@ void CamDetectShow::execute()
     io::VideoPlayer player{ "faces" };
     cv::Mat frame;
 
-    DetectorLBP detector{ "../res/haarcascades" };
+    algo::DetectorLBP detector{ "../res/haarcascades" };
 
     while( cam >> frame )
     {
@@ -136,83 +136,35 @@ void CamDetectShow::execute()
 }
 
 
-struct CamTrain::Impl
-{
-    Impl( int label 
-        , const std::string & fname_model_in
-        , const std::string & fname_model_out )
-        : _recognizer{ cv::face::createLBPHFaceRecognizer() }
-        , _fname_model_out{ fname_model_out }
-        , _tmp_labels{ label }
-        , _tmp_faces{}
-    {
-        _tmp_faces.reserve( 1 );
-
-        if( ! fname_model_in.empty() )
-        {
-            _recognizer->load( fname_model_in );
-        }
-    }
-
-
-    void update( const cv::Mat & face )
-    {
-        _tmp_faces[0] = face;
-        assert( _tmp_faces.size() == _tmp_labels.size() );
-
-        _recognizer->update( _tmp_faces, _tmp_labels );
-    }
-
-
-    void execute()
-    {
-        io::Camera cam{ io::Mode::_grayscale };
-        io::VideoPlayer vid{ "training in progress..." };
-        DetectorLBP detector{ "../res/haarcascades" };
-        cv::Mat frame;
-
-        while( cam >> frame )
-        {
-            const auto rects = detector.get_face_rects( frame );
-            io::draw_rects( frame, rects );
-            vid << frame;
-
-            if( rects.size() == 1 )
-            {
-                const auto face = io::crop( frame, rects[0] );
-                update( face );
-                _recognizer->save( _fname_model_out );
-                std::cout << "Wrote model to file: " << _fname_model_out
-                          << std::endl;
-            }
-        }
-    }
-
-
-private:
-    cv::Ptr< cv::face::FaceRecognizer > _recognizer;
-    const std::string _fname_model_out;
-    const std::vector<int> _tmp_labels;
-    std::vector<cv::Mat> _tmp_faces;
-};
-
-
-CamTrain::CamTrain( int label
-                  , const std::string & fname_model_in
-                  , const std::string & fname_model_out )
-    : _impl{std::make_unique<Impl>( label, fname_model_in, fname_model_out ) }
+CamTrain::CamTrain( const std::string & label,  const std::string & fname_model )
+    : _label{ label }
+    , _model{ fname_model }
 {
 }
 
 
 void CamTrain::execute()
 {
-    _impl->execute();
-}
+    io::Camera cam{ io::Mode::_grayscale };
+    io::VideoPlayer vid{ "training in progress..." };
+    algo::DetectorLBP detector{ "../res/haarcascades" };
+    cv::Mat frame;
 
+    while( cam >> frame )
+    {
+        cv::equalizeHist( frame, frame );
 
-CamTrain::~CamTrain()
-{
+        const auto rects = detector.get_face_rects( frame );
+        io::draw_rects( frame, rects );
+        vid << frame;
+
+        if( rects.size() == 1 )
+        {
+            const auto face = io::crop( frame, rects[0] );
+            _model.update( 0, face );
+            _model.save();
+        }
+    }
 }
 
 
@@ -228,12 +180,14 @@ struct CamRecognise::Impl
     void run()
     {
         io::Camera cam{ io::Mode::_grayscale };
-        DetectorLBP detector{ "../res/haarcascades" };
+        algo::DetectorLBP detector{ "../res/haarcascades" };
         io::VideoPlayer vid{ "recognising in progress..." };
         cv::Mat frame;
 
         while( cam >> frame )
         {
+            cv::equalizeHist( frame, frame );
+
             const auto rects = detector.get_face_rects( frame );
             io::draw_rects( frame, rects );
             vid << frame;

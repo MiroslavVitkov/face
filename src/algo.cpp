@@ -12,6 +12,10 @@
 #include <sstream>
 
 
+namespace algo
+{
+
+
 cv::CascadeClassifier create_classifier( const std::string & cascades_dir
                                        , const std::string & name )
 {
@@ -40,15 +44,11 @@ std::vector<cv::Rect> DetectorLBP::get_face_rects( const cv::Mat & frame
 {
     assert( ! frame.empty() );
 
-    // Convert to 8-bit single channel image.
-    cv::Mat gray = frame;
-//    cv::cvtColor( frame, gray, CV_BGR2GRAY );
-
     // Increase contrast in under- or over-exposed areas of the image.
-    cv::equalizeHist( gray, gray );
+    cv::equalizeHist( frame, frame );
 
     std::vector<cv::Rect> rects;
-    _classifier.detectMultiScale( gray, rects );
+    _classifier.detectMultiScale( frame, rects );
     // Perhaps do low-pass filtering over 3 consecutive frames to evade false positives.
     (void)min_confidence;
 
@@ -72,3 +72,43 @@ std::vector<cv::Mat> DetectorLBP::get_faces( const cv::Mat & frame
 
     return faces;
 }
+
+
+TrainerLBP::TrainerLBP( const std::string & fname_model )
+    : _model{ cv::face::createLBPHFaceRecognizer() }
+    , _fname_model{ fname_model }
+    , _tmp_labels{}
+    , _tmp_faces{}
+{
+    _tmp_labels.push_back( 0 );
+    _tmp_faces.emplace_back( cv::Mat{} );
+
+    try
+    {
+        _model->load( fname_model );
+    }
+    catch( ... )
+    {
+        // File doesn't exist - load nothing.
+    }
+}
+
+void TrainerLBP::update( int label, const cv::Mat & gray_face )
+{
+    _tmp_labels[0] = label;
+    _tmp_faces[0] = gray_face;
+    _model->update( _tmp_faces, _tmp_labels );
+}
+
+
+void TrainerLBP::save() const
+{
+    _model->save( _fname_model );
+}
+
+
+
+int predict( const cv::Mat & gray_face );
+
+
+}  // namespace algo

@@ -5,6 +5,11 @@
 #include "except.h"
 
 #include <opencv2/opencv.hpp>
+#include <opencv2/face.hpp>
+
+
+namespace algo
+{
 
 
 struct Detector
@@ -43,17 +48,22 @@ private:
 
 
 
-// Detect faces usng Local Bnary Patterns.
-// https://docs.opencv.org/3.2.0/d1/de5/classcv_1_1CascadeClassifier.html
-struct LBPRecogniser : public Recogniser
+// Tran a Local Bnary Patterns model.
+struct TrainerLBP
 {
-    using Label = std::string;
-
-    LBPRecogniser( const std::string & cascades_dir );
+    TrainerLBP( const std::string & fname_model );
+    void update( int label, const cv::Mat & gray_face );
+    void save() const;
 
 private:
-    cv::CascadeClassifier _classifier;
+    cv::Ptr<cv::face::FaceRecognizer> _model;
+    const std::string _fname_model;
+    std::vector<int> _tmp_labels;
+    std::vector<cv::Mat> _tmp_faces;
 };
+
+
+}  // namespace algo
 
 
 #endif // defined(ALGO_H_)

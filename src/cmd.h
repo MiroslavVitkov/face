@@ -2,6 +2,8 @@
 #define CMD_H_
 
 
+#include "algo.h"
+
 #include <memory>
 #include <string>
 
@@ -57,15 +59,13 @@ struct CamDetectShow : Base
 // Tell the model who the person on the carera is.
 struct CamTrain : Base
 {
-    CamTrain( int label
-            , const std::string & fname_model_in = ""
-            , const std::string & fname_model_out = "model" );
+    CamTrain( const std::string & label
+            , const std::string & fname_model = "model" );  // created if missing
     void execute() override;
-    ~CamTrain() override;
 
 private:
-    struct Impl;
-    std::unique_ptr<Impl> _impl;
+    const std::string _label;
+    algo::TrainerLBP _model;
 };
 
 

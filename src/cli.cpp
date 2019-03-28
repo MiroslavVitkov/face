@@ -14,10 +14,10 @@ namespace cli
 
 std::unique_ptr<cmd::Base> parse( int argc, Argv argv )
 {
-    const cv::String keys =
+    const std::string keys =
         "{help h usage ? |      | print this message        }"
-        "{test t         |      | diagnostics for debugging }"
-        "{@image2        |<none>| image2 for compare   }"
+        "{test           |      | diagnostics for debugging }"
+        "{train t        |      |                           }"
         "{@repeat        |1     | number               }"
         "{path           |.     | path to file         }"
         "{fps            | -1.0 | fps for output video }"
@@ -41,8 +41,8 @@ std::unique_ptr<cmd::Base> parse( int argc, Argv argv )
                                           , "cam" );
     }
 
-    //return std::make_unique<cmd::CamTrain>( 1, "", "model" );
-    return std::make_unique<cmd::CamRecognise>();
+    return std::make_unique<cmd::CamTrain>("miro");
+    //return std::make_unique<cmd::CamRecognise>();
 }
 
 /*
