@@ -142,6 +142,12 @@ CamTrain::CamTrain( const std::string & label,  const std::string & fname_model 
 }
 
 
+CamTrain::~CamTrain()
+{
+    _model.save();
+}
+
+
 void CamTrain::execute()
 {
     io::Camera cam{ io::Mode::_grayscale };
@@ -149,8 +155,15 @@ void CamTrain::execute()
     algo::DetectorLBP detector{ "../res/haarcascades" };
     cv::Mat frame;
 
+    std::cout << "To terminate properly, focus on the video window and hold any key"
+              << std::endl;
+
     while( cam >> frame )
     {
+        if( cv::waitKey( 1 ) != 255 )
+        {
+            return;
+        }
         cv::equalizeHist( frame, frame );
 
         const auto rects = detector.get_face_rects( frame );
@@ -161,7 +174,6 @@ void CamTrain::execute()
         {
             const auto face = io::crop( frame, rects[0] );
             _model.update( face );
-            _model.save();
         }
     }
 }

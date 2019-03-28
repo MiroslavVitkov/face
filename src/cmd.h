@@ -61,6 +61,7 @@ struct CamTrain : Base
 {
     CamTrain( const std::string & label
             , const std::string & fname_model = "model" );  // created if missing
+    ~CamTrain() override;
     void execute() override;
 
 private:
