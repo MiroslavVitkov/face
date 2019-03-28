@@ -161,7 +161,7 @@ void CamTrain::execute()
         if( rects.size() == 1 )
         {
             const auto face = io::crop( frame, rects[0] );
-            _model.update( 0, face );
+            _model.update( 0, face );  // !!!!!!!!!!!!!!!!!!!!!!
             _model.save();
         }
     }
@@ -171,9 +171,9 @@ void CamTrain::execute()
 struct CamRecognise::Impl
 {
     Impl( const std::string & fname_model )
-        : _recognizer{ cv::face::createLBPHFaceRecognizer() }
+        : _recogniser{ cv::face::createLBPHFaceRecognizer() }
     {
-        _recognizer->load( fname_model );
+        _recogniser->load( fname_model );
     }
 
 
@@ -197,7 +197,7 @@ struct CamRecognise::Impl
                 double confidence;
                 int label;
                 const auto face = io::crop( frame, r );
-                _recognizer->predict( face, label, confidence );
+                _recogniser->predict( face, label, confidence );
                 std::cout << "DETECTED"
                           << " face number: " << std::to_string( label )
                           << ", confidence: " << std::to_string( confidence )
@@ -207,7 +207,7 @@ struct CamRecognise::Impl
     }
 
 
-    cv::Ptr< cv::face::FaceRecognizer > _recognizer;
+    cv::Ptr< cv::face::FaceRecognizer > _recogniser;
 };
 
 
